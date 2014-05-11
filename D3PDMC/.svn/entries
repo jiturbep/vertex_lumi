@@ -1,0 +1,43 @@
+10
+
+dir
+315060
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst/Institutes/LBNL/Luminosity/D3PDMC/trunk
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst
+
+
+
+2012-12-20T17:08:47.594813Z
+309112
+jiturbep
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+28d52da6-859c-4cdc-abcc-1ec3d2c02001
+
+Root
+dir
+
+cmt
+dir
+
+scripts
+dir
+
+D3PDMC
+dir
+
+util
+dir
+

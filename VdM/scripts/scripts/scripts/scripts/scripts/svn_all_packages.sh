@@ -1,0 +1,29 @@
+# Run svn update for each package
+action=${1:-"update"}
+
+message=""
+if [ "$action" == "commit" ]; then
+  read -p "Commit message for this changeset? " message
+  if [ "$message" == "n" -o "$message" == "" ]; then
+    echo "No commit message provided. Commit will not be attempted."
+    return
+  fi
+fi
+
+for package in `ls -d */ | sed "s|/||g" | grep -v "Run" | grep -v "BCM"`; do
+  cd $package
+  case $action in
+    "commit" )
+      # Perform svn commit on each package
+      svn commit -m "$message";;
+    "status" )
+      # Check svn status for each package
+      svn status;;
+    "update" )
+      # Perform svn update on each package
+      svn update;;
+    * )
+      echo "Option $action not recognised";;
+  esac
+  cd ..
+done

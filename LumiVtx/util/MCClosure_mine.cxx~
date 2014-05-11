@@ -1,0 +1,480 @@
+/**
+  *  Monte Carlo closure test.
+  *  Author: David R. Yu
+  *
+  ** Input: -i (input MC sample) -t (corrections MC) -o (output location)
+  *
+  **/
+
+//#define DEBUG
+#define NOSPLIT
+#define INCLUDE_HACKS
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <getopt.h>
+#include <stdlib.h>
+#include <string>
+
+#include "TROOT.h"
+#include "TString.h"
+#include "TH1D.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TTree.h"
+#include "TBranch.h"
+#include "TLeaf.h"
+#include "TLeafI.h"
+#include "TLeafD.h"
+#include "TMath.h"
+#include "TGraphErrors.h"
+#include "TPaveStats.h"
+
+#include "LumiVtx/LumiVtx.h"
+#include "VdM/VtxCalibration.h"
+#include "atlasstyle/AtlasUtils.h"
+#include "atlasstyle/AtlasLabels.h"
+
+using namespace std;
+
+TGraphErrors* GetPercentDifference(TGraphErrors *tg_in, Double_t value);
+void ApplyXshift(TGraphErrors *tg_in, Float_t shift);
+
+// --- Usage
+void usage(const char *pname);
+
+int main(int argc, char **argv) {
+
+  SetAtlasStyle();
+  gStyle->SetOptFit(111);
+  gStyle->SetStatY(1);
+	gStyle->SetStatX(1);
+	gStyle->SetStatW(0.1);
+	gStyle->SetStatH(0.1); 
+  // --- Scan for command line parameters
+
+  //Input/output detection
+  TString input_tag = "";
+  TString corrections_tag = "";
+  TString output_prefix = "";
+  Float_t mu_scale = -1.;
+
+  int c;
+  extern int optind;
+  extern char* optarg;
+  while (1) {
+    int option_index = 0;
+    static struct option long_options[] = {
+      {"input",  required_argument,  0,  'i'},
+      {"tag", required_argument, 0, 't'},
+      {"outPrefix",  required_argument,  0,  'o'},
+      {"help",  no_argument,    0,  'h'},
+      {0, 0, 0, 0}
+    };
+    c=getopt_long(argc, argv, "a:i:t:o:",long_options,&option_index);
+    if (c == -1) {
+      break;
+    }
+    switch(c) {
+      case 'a':
+        input_tag = optarg;
+        corrections_tag = optarg;
+        output_prefix = optarg;
+        break;
+      case 'i': {
+        input_tag = optarg;
+        break;
+      }
+      case 't': {
+        corrections_tag = optarg;
+        break;
+      }
+      case 'o': {
+        output_prefix = optarg;
+        break;
+      }
+      case 'h': {
+        return 0;
+        break;
+      }
+    }
+  } // End input parameter scanning.
+
+  if (input_tag == "" || corrections_tag == "" || output_prefix == "") {
+    cout << "Please specify input, corrections, and output stuff" << endl;
+    return 0;
+  }
+
+  cout << "Loading TTree" << endl;
+  //TFile *f_histograms = new TFile(TString("/eliza18/atlas/dryu/Luminosity/VertexCounts/MC/") + input_tag + TString("/v9/InDetTrackD3PD_results.root"), "READ");
+  //TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both.root"), "READ");
+  TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both.root"), "READ");
+  //TFile *f_counts = new TFile(TString("/eliza18/atlas/dryu/Luminosity/VertexCounts/MC/") + input_tag + TString("/v9/InDetTrackD3PD_results_tree.root"), "READ");
+  //TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both_tree.root"), "READ");
+  TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both_tree.root"), "READ");
+  TFile *f_raw = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/MCClosureTest_both.root"), "READ");
+  TTree *t = (TTree*)f_counts->Get("t_vdm");
+  Long64_t n_entries = 100;
+
+  std::vector<Int_t> nTrkCuts;
+  //nTrkCuts.push_back(3);
+  //nTrkCuts.push_back(4);
+  nTrkCuts.push_back(5);
+
+  std::map<Int_t, Int_t> marker_styles;
+  marker_styles[3] = 20;
+  marker_styles[4] = 21;
+  marker_styles[5] = 22;
+
+  std::map<Int_t, Int_t> marker_colors;
+  marker_colors[3] = kRed+1;
+  marker_colors[4] = kBlue+1;
+  marker_colors[5] = kBlack;
+
+  std::map<Int_t, Float_t> x_shifts;
+  //x_shifts[5] = -0.05;
+
+  std::vector<TGraphErrors*> graphs_muvis_ngenint, graphs_murec_ngenint;
+
+  std::map<Int_t, TGraphErrors*> tg_nvtxrecon_ngenint; // Total number of vertices reconstructed vs. number of generated interactions
+  std::map<Int_t, TGraphErrors*> tg_murec_ngenint, tg_mureal_ngenint, tg_muvis_ngenint;
+  std::map<Int_t, TGraph*> tg_comparison;
+
+  std::map<Int_t, std::map<Int_t, Float_t> > m_nvtxrecon_ngenint, m_murec_ngenint, m_nvtxrecon_err_ngenint, m_murec_err_ngenint;
+  std::map<Int_t, TGraphErrors*> tg_murec_muinel, tg_mureal_muinel, tg_muvis_muinel;
+
+  TLegend *l_nolines = new TLegend(0.85, 0.75, 0.95, 0.85);
+  l_nolines->SetFillColor(0);
+  l_nolines->SetBorderSize(1);
+
+  TCanvas *c_nvtxrecon_ngenint = new TCanvas("c_nvtxrecon_ngenint", "c_nvtxrecon_ngenint", 1200, 800);
+  TCanvas *c_murec_ngenint = new TCanvas("c_murec_ngenint", "c_murec_ngenint", 1200, 800);
+  TCanvas *c_muvis_ngenint = new TCanvas("c_muvis_ngenint", "c_muvis_ngenint", 1200, 800);
+  TCanvas *c_mureal_ngenint = new TCanvas("c_mureal_ngenint", "c_mureal_ngenint", 1200, 800);
+  TCanvas *c_comparison = new TCanvas("c_comparison", "c_comparison", 1200, 800);
+
+  bool draw_first = true;
+
+  for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+
+    cout << "On NTrk " << *nTrkCut << endl;
+
+    TString hname = "h_mu_NVtx";
+    hname += *nTrkCut;
+    TH1D *hist = (TH1D*)f_raw->Get(hname);
+    //hist->Print("all");
+    n_entries = hist->GetNbinsX();
+    cout << "Number of entries = number of bins = " << n_entries << endl;
+
+    TString tgname = "tg_murec_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_murec_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_murec_ngenint[*nTrkCut]->SetName(tgname);
+
+    tgname = "tg_nvtxrecon_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_nvtxrecon_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_nvtxrecon_ngenint[*nTrkCut]->SetName(tgname);
+
+    tgname = "tg_comparison_NTrk";
+    tgname += *nTrkCut;
+    tg_comparison[*nTrkCut] = new TGraph(n_entries);
+    tg_comparison[*nTrkCut]->SetName(tgname);
+
+    for (int i = 0; i < n_entries; i++){
+      tg_murec_ngenint[*nTrkCut]->SetPoint(i,i,hist->GetBinContent(i+1));
+      tg_murec_ngenint[*nTrkCut]->SetPointError(i,0,hist->GetBinError(i+1));
+    }
+
+    TString legend_entry = "NTrk";
+    legend_entry += *nTrkCut;
+    l_nolines->AddEntry(tg_murec_ngenint[*nTrkCut], legend_entry, "p");
+
+    TString bname;
+    bname = "NVtx";
+    bname += *nTrkCut;
+    bname += "_BSC";
+    for (int entry = 0; entry < n_entries; entry++) {
+      t->GetEntry(entry);
+
+      Int_t c_ngenint = t->GetLeaf("pLB")->GetValue(0);
+      Float_t c_nvtxrecon = t->GetLeaf(bname)->GetValue(0);
+      Float_t c_ntrig = (Float_t)t->GetLeaf("NTrig")->GetValue(0);
+
+      tg_nvtxrecon_ngenint[*nTrkCut]->SetPoint(entry, c_ngenint, c_nvtxrecon);
+      m_nvtxrecon_ngenint[*nTrkCut][c_ngenint] = c_nvtxrecon;
+      m_nvtxrecon_err_ngenint[*nTrkCut][c_ngenint] = TMath::Sqrt(c_nvtxrecon);
+
+      //cout << "c_ngenint = " << c_ngenint << ", c_nvtxrecon = " << c_nvtxrecon << ", c_ntrig = " << c_ntrig << endl;
+      //cout << "For i = " << c_ngenint << " c_nvtxrecon / c_ntrig = " << c_nvtxrecon / c_ntrig << endl;
+
+      if (t->GetLeaf("NTrig")->GetValue(0) > 0 && c_nvtxrecon > 0) {
+        //tg_murec_ngenint[*nTrkCut]->SetPoint(entry, c_ngenint, c_nvtxrecon / c_ntrig);
+        //tg_murec_ngenint[*nTrkCut]->SetPointError(entry, 0., TMath::Sqrt(c_nvtxrecon) / c_ntrig);
+
+        m_murec_ngenint[*nTrkCut][c_ngenint] = 1. * c_nvtxrecon / c_ntrig;
+        m_murec_err_ngenint[*nTrkCut][c_ngenint] = 1. * TMath::Sqrt(c_nvtxrecon) / c_ntrig;
+      } 
+    }
+    cout << "////////////// Comparison plot " << endl;
+    for (int k = 1; k < n_entries; k++){
+      if (m_murec_ngenint[*nTrkCut][k] > 0){
+        tg_comparison[*nTrkCut]->SetPoint(k,m_murec_ngenint[*nTrkCut][k], m_murec_ngenint[*nTrkCut][k]/hist->GetBinContent(k+1));
+      }
+    }
+
+    // Apply pileup corrections
+    tgname = "tg_mureal_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_mureal_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_mureal_ngenint[*nTrkCut]->SetName(tgname);
+
+    tgname = "tg_muvis_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_muvis_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_muvis_ngenint[*nTrkCut]->SetName(tgname);
+
+    //FakeCorrection *fc = new FakeCorrection("mc_8TeV_17.2_default", *nTrkCut);
+    cout << "[MCClosure] Creating new FakeCorrection(" << corrections_tag << "," << *nTrkCut << ")" << endl;
+    FakeCorrection *fc = new FakeCorrection(corrections_tag, *nTrkCut);
+		//TString masking_correction_tag = "data_8TeV_17.2-VtxLumi_207216";
+		TString masking_correction_tag = "mc_8TeV_17.2_VtxLumi_2newsets";
+    cout << "[MCClosure] Creating new PileupMaskingCorrection(" << masking_correction_tag << "," << *nTrkCut << ")" << endl;
+		PileupMaskingCorrection *mc = new PileupMaskingCorrection(masking_correction_tag, *nTrkCut);
+		//mc->is_MC = kTRUE;
+    hname = "hist/PriVtxZpLB_BCID0";
+    TH2D *h_z_plb = (TH2D*)f_histograms->Get(hname);
+    TH1D *h_z = (TH1D*)h_z_plb->ProjectionX();
+    hname = "h_z_NTrk";
+    hname += *nTrkCut;
+    h_z->SetName(hname);
+    TCanvas *canvas = new TCanvas("h_z","h_z",800,600);
+    h_z->Draw();
+    canvas->Print("h_z_from_MC_Closure_Test.pdf");
+
+    TString pmc_tag = corrections_tag;
+    pmc_tag += *nTrkCut;
+    cout << "[MCClosure] Next step: GenerateDzDistribution" << endl;
+    mc->GenerateDzDistribution(h_z, pmc_tag);
+    cout << "[MCClosure] Next step: GenerateCorrection(mc->GetExpectedDzDistribution())" << endl;
+    mc->GenerateCorrection(mc->GetExpectedDzDistribution());
+
+    for (int i=0; i < tg_murec_ngenint[*nTrkCut]->GetN(); i++) {
+      Double_t mu_raw = tg_murec_ngenint[*nTrkCut]->GetY()[i];
+      Double_t initial_masking_correction_factor = mc->GetCorrectionFactor(mu_raw);
+      if (initial_masking_correction_factor < 1.) {
+        initial_masking_correction_factor = 1.;
+      }
+      //cout << i << endl;
+      //cout << "For mu_raw = " << mu_raw << ", initial_masking_correction_factor = " << initial_masking_correction_factor << endl;
+      /* Subtraction method*/
+
+      Double_t mu_fake = fc->GetFakeMuFromMuReconMC(mu_raw * initial_masking_correction_factor);
+      //cout << "For mu_raw*initial_masking_correction_factor = " << mu_raw*initial_masking_correction_factor << ", mu_fake = " << mu_fake << endl;
+
+      Double_t mu_real = mu_raw - mu_fake;
+      Double_t final_masking_correction_factor = mc->GetCorrectionFactor(mu_real);
+      //cout << "For mu_real = mu_raw - mu_fake = " << mu_real << ", final_masking_correction_factor = " << final_masking_correction_factor << endl;
+      Double_t mu_vis = mu_real * final_masking_correction_factor;
+      //cout << "Finally, mu_vis = mu_real*final_masking_correction_factor = " << mu_real << endl;
+
+      Double_t mu_vis_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i] * final_masking_correction_factor;
+
+      /* Multiplication method */
+      /*
+      Double_t fake_fraction = fc->GetFakeFractionFromMuReconMC(mu_raw * initial_masking_correction_factor);
+      Double_t mu_vis = mu_raw * (1. - fake_fraction) * initial_masking_correction_factor;
+      */
+      if (mu_vis>0){
+      tg_muvis_ngenint[*nTrkCut]->SetPoint(i, tg_murec_ngenint[*nTrkCut]->GetX()[i], mu_vis);
+      tg_muvis_ngenint[*nTrkCut]->SetPointError(i, 0., mu_vis_err);}
+
+      if (mu_real>0){
+      tg_mureal_ngenint[*nTrkCut]->SetPoint(i, tg_murec_ngenint[*nTrkCut]->GetX()[i], mu_real);
+      tg_mureal_ngenint[*nTrkCut]->SetPointError(i, 0., 0.);}
+
+    }
+
+    TString draw_options;
+    if (draw_first) {
+      draw_first = false;
+      draw_options = "ap";
+    } else {
+      draw_options = "p";
+    }
+
+    // Optionally, draw a label on the plot specifying which sample is used.
+    if (draw_options == "ap") {
+      myText(0.01, 0.01, kBlack, input_tag, 0.5);
+    }
+
+
+    c_nvtxrecon_ngenint->cd();
+    //tg_nvtxrecon_ngenint[*nTrkCut]->SetMinimum(0.2);
+    //tg_nvtxrecon_ngenint[*nTrkCut]->SetMaximum(0.9);
+    tg_nvtxrecon_ngenint[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_nvtxrecon_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_nvtxrecon_ngenint[*nTrkCut]->GetXaxis()->SetTitle("#mu");
+    tg_nvtxrecon_ngenint[*nTrkCut]->GetYaxis()->SetTitle("Total number of vertices reconstructed");
+    tg_nvtxrecon_ngenint[*nTrkCut]->Draw(draw_options);
+
+    c_comparison->cd();
+    tg_comparison[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_comparison[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_comparison[*nTrkCut]->GetXaxis()->SetTitle("#mu");
+    tg_comparison[*nTrkCut]->GetYaxis()->SetTitle("Ratio of the two definitions");
+    tg_comparison[*nTrkCut]->Draw(draw_options);
+
+    TLegend *l_muinsteps = new TLegend(0.85, 0.20, 0.95, 0.30);
+    l_muinsteps->SetFillColor(0);
+    l_muinsteps->SetBorderSize(1);
+
+    TF1 *line0 = new TF1("line0","[0]*x", 0, 30);
+
+    c_murec_ngenint->cd();    
+    //tg_murec_ngenint[*nTrkCut]->SetMinimum(0.2);
+    //tg_murec_ngenint[*nTrkCut]->SetMaximum(0.9);
+    tg_murec_ngenint[*nTrkCut]->SetMarkerStyle(24);
+    tg_murec_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_murec_ngenint[*nTrkCut]->GetXaxis()->SetTitle("#mu reconstructed");
+    tg_murec_ngenint[*nTrkCut]->GetYaxis()->SetTitle("<Nvertices reconstructed>");
+    tg_murec_ngenint[*nTrkCut]->Draw(draw_options);
+    l_muinsteps->AddEntry(tg_murec_ngenint[*nTrkCut],"#mu_{raw}","P");
+    graphs_murec_ngenint.push_back(tg_murec_ngenint[*nTrkCut]);
+    tg_murec_ngenint[*nTrkCut]->Fit("line0","SEMR");
+    TF1 *fit1 = tg_murec_ngenint[*nTrkCut]->GetFunction("line0");
+    fit1->SetLineColor(kBlue);
+    fit1->SetLineWidth(1);
+    Double_t chi2 = fit1->GetChisquare();
+    Double_t ndf = fit1->GetNDF();
+    Double_t slope = fit1->GetParameter(0);
+    Double_t slope_err = fit1->GetParError(0);
+    cout << endl;
+    cout << "///////////// Fit straight line to mu_raw tgraph, chi2/ndf = " << chi2 << "/" << ndf << "=" << chi2/ndf << endl;
+    cout << endl;
+
+    c_mureal_ngenint->cd();
+    //tg_muvis_ngenint[*nTrkCut]->SetMinimum(0.2);
+    //tg_muvis_ngenint[*nTrkCut]->SetMaximum(0.9);
+    tg_mureal_ngenint[*nTrkCut]->SetMarkerStyle(25);
+    tg_mureal_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_mureal_ngenint[*nTrkCut]->GetXaxis()->SetTitle("#mu reconstructed");
+    tg_mureal_ngenint[*nTrkCut]->GetYaxis()->SetTitle("<Nvertices reconstructed> after fake correction");
+    tg_mureal_ngenint[*nTrkCut]->Draw(draw_options);
+    l_muinsteps->AddEntry(tg_mureal_ngenint[*nTrkCut],"#mu_{real}","P");
+
+    c_muvis_ngenint->cd();
+    //tg_muvis_ngenint[*nTrkCut]->SetMinimum(0.2);
+    //tg_muvis_ngenint[*nTrkCut]->SetMaximum(0.9);
+    tg_muvis_ngenint[*nTrkCut]->SetMarkerStyle(26);
+    tg_muvis_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    TString title = "#mu in steps, nTrkCut";
+    title+=*nTrkCut;
+    tg_muvis_ngenint[*nTrkCut]->SetTitle(title);
+    tg_muvis_ngenint[*nTrkCut]->GetXaxis()->SetTitle("#mu reconstructed");
+    tg_muvis_ngenint[*nTrkCut]->GetYaxis()->SetTitle("<Nvertices reconstructed>  after corrections");
+    tg_muvis_ngenint[*nTrkCut]->Draw(draw_options);
+    graphs_muvis_ngenint.push_back(tg_muvis_ngenint[*nTrkCut]);
+    //cout << "///////////// Performing straight line fit ///////////////" << endl;
+    tg_muvis_ngenint[*nTrkCut]->Fit("line0","SEMR");
+    TF1 *fit = tg_muvis_ngenint[*nTrkCut]->GetFunction("line0");
+    fit->SetLineColor(kBlue);
+    fit->SetLineWidth(1);
+    chi2 = fit->GetChisquare();
+    ndf = fit->GetNDF();
+    slope = fit->GetParameter(0);
+    slope_err = fit->GetParError(0);
+    cout << endl;
+    cout << "///////////// Fit straight line to mu_vis tgraph, chi2/ndf = " << chi2 << "/" << ndf << "=" << chi2/ndf << endl;
+    cout << endl;
+    l_muinsteps->AddEntry(tg_muvis_ngenint[*nTrkCut],"#mu_{vis}","P");
+
+    TCanvas *c_muinsteps_ngenint = new TCanvas("c_muinsteps_ngenint", "c_muinsteps_ngenint", 1200, 800);
+    TLegend *l_trkcut = new TLegend(0.85, 0.30, 0.95, 0.40);
+    l_trkcut->SetFillColor(0);
+    l_trkcut->SetBorderSize(1);
+    c_muinsteps_ngenint->cd();
+    tg_muvis_ngenint[*nTrkCut]->Draw("ap");
+    tg_murec_ngenint[*nTrkCut]->Draw("p");
+    tg_mureal_ngenint[*nTrkCut]->Draw("p");
+    //TPaveStats *st = (TPaveStats*)tg_muvis_ngenint[*nTrkCut]->GetListOfFunctions()->FindObject("stats");
+   	//st->SetX1NDC(0.9); //new x start position
+   	//st->SetX2NDC(0.9); //new x end position
+    TString legend_justtrakcut = "nTrkCut"; legend_justtrakcut+=*nTrkCut;
+    l_trkcut->AddEntry(tg_muvis_ngenint[*nTrkCut],legend_justtrakcut,"P");
+    l_muinsteps->Draw("same");
+    l_trkcut->Draw("same");
+    TString name = TString("") + output_prefix + TString("/Mine/c_muinsteps_ngenint_nTrkCut") ;
+    name += *nTrkCut;
+    c_muinsteps_ngenint->SaveAs(name+TString(".pdf"));
+
+  }
+  cout << "All done." << endl;
+  cout << "output_prefix " << output_prefix << endl;
+
+  c_nvtxrecon_ngenint->cd();
+  l_nolines->Draw();
+  c_nvtxrecon_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_nvtxrecon_ngenint.pdf"));
+
+  c_comparison->cd();
+  l_nolines->Draw();
+  c_comparison->SaveAs(TString("") + output_prefix + TString("/Mine/c_comparison.pdf"));
+
+  c_murec_ngenint->cd();
+  l_nolines->Draw();
+  c_murec_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_muraw_ngenint.pdf"));
+
+  c_muvis_ngenint->cd();
+  l_nolines->Draw();
+  c_muvis_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_muvis_ngenint.pdf"));
+
+  c_mureal_ngenint->cd();
+  l_nolines->Draw();
+  c_mureal_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_mureal_ngenint.pdf"));
+
+
+  TFile *outputFile_muvis = new TFile("muvis_ngenint.root","RECREATE");
+  for (vector<TGraphErrors*>::iterator tgraph = graphs_muvis_ngenint.begin(); tgraph != graphs_muvis_ngenint.end(); ++tgraph) {
+    (*tgraph)->Write();
+  }
+  outputFile_muvis->Close();
+
+  TFile *outputFile_murec = new TFile("murec_ngenint.root","RECREATE");
+  for (vector<TGraphErrors*>::iterator tgraph = graphs_murec_ngenint.begin(); tgraph != graphs_murec_ngenint.end(); ++tgraph) {
+    (*tgraph)->Write();
+  }
+  outputFile_murec->Close();
+
+}
+
+TGraphErrors* GetPercentDifference(TGraphErrors *tg_in, Double_t value) {
+
+  cout << "[MCClosure] DEBUG : GetPercentDifference(" << tg_in->GetName() << ", " << value << ")" << endl;
+
+  TGraphErrors *tg_out = new TGraphErrors(tg_in->GetN());
+  tg_out->SetName(tg_in->GetName() + TString("_difference"));
+
+  for (int i = 0; i < tg_in->GetN(); i++) {
+
+    tg_out->SetPoint(i, tg_in->GetX()[i], (tg_in->GetY()[i] - value) / value * 100.);
+    tg_out->SetPointError(i, 0., tg_in->GetEY()[i] / value * 100.);
+
+  }
+
+  return tg_out;
+
+}
+
+void ApplyXshift(TGraphErrors *tg_in, Float_t shift) {
+
+  cout << "[McClosure] INFO : ApplyXshift()..." << std::flush;
+  for (int i = 0; i < tg_in->GetN(); i++) {
+    tg_in->SetPoint(i, tg_in->GetX()[i] + shift, tg_in->GetY()[i]);
+    tg_in->SetPointError(i, tg_in->GetEX()[i], tg_in->GetEY()[i]);
+  }
+  cout << "done" << endl;
+
+}

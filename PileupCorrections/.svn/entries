@@ -1,0 +1,40 @@
+10
+
+dir
+315060
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst/Institutes/LBNL/Luminosity/PileupCorrections/trunk
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst
+
+
+
+2013-01-15T17:39:38.919096Z
+310897
+jiturbep
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+28d52da6-859c-4cdc-abcc-1ec3d2c02001
+
+Root
+dir
+
+cmt
+dir
+
+PileupCorrections
+dir
+
+util
+dir
+

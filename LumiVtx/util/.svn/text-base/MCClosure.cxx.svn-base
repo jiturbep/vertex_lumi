@@ -1,0 +1,634 @@
+/**
+  *  Monte Carlo closure test.
+  *  Author: David R. Yu
+  *
+  ** Input: -i (input MC sample) -t (corrections MC) -o (output location)
+  *
+  **/
+
+//#define DEBUG
+#define NOSPLIT
+#define INCLUDE_HACKS
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <getopt.h>
+#include <stdlib.h>
+#include <string>
+
+#include "TROOT.h"
+#include "TString.h"
+#include "TH1D.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include "TTree.h"
+#include "TBranch.h"
+#include "TLeaf.h"
+#include "TLeafI.h"
+#include "TLeafD.h"
+#include "TMath.h"
+
+#include "LumiVtx/LumiVtx.h"
+#include "VdM/VtxCalibration.h"
+#include "atlasstyle/AtlasUtils.h"
+#include "atlasstyle/AtlasLabels.h"
+
+using namespace std;
+
+TGraphErrors* GetPercentDifference(TGraphErrors *tg_in, Double_t value);
+void ApplyXshift(TGraphErrors *tg_in, Float_t shift);
+
+// --- Usage
+void usage(const char *pname);
+
+int main(int argc, char **argv) {
+  SetAtlasStyle();
+  // --- Scan for command line parameters
+
+  //Input/output detection
+  TString input_tag = "";
+  TString corrections_tag = "";
+  TString output_prefix = "";
+  Float_t mu_scale = -1.;
+
+  int c;
+  extern int optind;
+  extern char* optarg;
+  while (1) {
+    int option_index = 0;
+    static struct option long_options[] = {
+      {"input",  required_argument,  0,  'i'},
+      {"tag", required_argument, 0, 't'},
+      {"outPrefix",  required_argument,  0,  'o'},
+      {"help",  no_argument,    0,  'h'},
+      {0, 0, 0, 0}
+    };
+    c=getopt_long(argc, argv, "a:i:t:o:",long_options,&option_index);
+    if (c == -1) {
+      break;
+    }
+    switch(c) {
+      case 'a':
+        input_tag = optarg;
+        corrections_tag = optarg;
+        output_prefix = optarg;
+        break;
+      case 'i': {
+        input_tag = optarg;
+        break;
+      }
+      case 't': {
+        corrections_tag = optarg;
+        break;
+      }
+      case 'o': {
+        output_prefix = optarg;
+        break;
+      }
+      case 'h': {
+        return 0;
+        break;
+      }
+    }
+  } // End input parameter scanning.
+
+  if (input_tag == "" || corrections_tag == "" || output_prefix == "") {
+    cout << "Please specify input, corrections, and output stuff" << endl;
+    return 0;
+  }
+
+  cout << "Loading TTree" << endl;
+  TFile *f_histograms = new TFile(TString("/eliza18/atlas/dryu/Luminosity/VertexCounts/MC/") + input_tag + TString("/v9/InDetTrackD3PD_results.root"), "READ");
+  TFile *f_counts = new TFile(TString("/eliza18/atlas/dryu/Luminosity/VertexCounts/MC/") + input_tag + TString("/v9/InDetTrackD3PD_results_tree.root"), "READ");
+  TTree *t = (TTree*)f_counts->Get("t_vdm");
+  Long64_t n_entries = 50;
+
+  std::vector<Int_t> nTrkCuts;
+  //nTrkCuts.push_back(2);
+  nTrkCuts.push_back(5);
+  nTrkCuts.push_back(7);
+  nTrkCuts.push_back(10);
+
+  std::map<Int_t, Int_t> marker_styles;
+  marker_styles[2] = 20;
+  marker_styles[5] = 21;
+  marker_styles[7] = 22;
+  marker_styles[10] = 23;
+
+  std::map<Int_t, Int_t> marker_colors;
+  marker_colors[2] = kBlack;
+  marker_colors[5] = kRed-3;
+  marker_colors[7] = kBlue+3;
+  marker_colors[10] = kGreen-3;
+
+  std::map<Int_t, Float_t> x_shifts;
+  x_shifts[5] = -0.05;
+  x_shifts[7] = 0.;
+  x_shifts[10] = 0.05;
+
+  std::map<Int_t, TGraphErrors*> tg_nvtxrecon_ngenint; // Total number of vertices reconstructed vs. number of generated interactions
+  std::map<Int_t, TGraphErrors*> tg_murec_ngenint;
+  std::map<Int_t, TGraphErrors*> tg_muvis_ngenint;
+  std::map<Int_t, TGraphErrors*> tg_vtx_efficiency_ngenint;
+  std::map<Int_t, TF1*> f_vtx_efficiency_linear;
+  std::map<Int_t, TGraphErrors*> tg_diff_vtx_efficiency_ngenint;
+  std::map<Int_t, TLine*> tl_average_vtx_efficiency_ngenint;
+
+  std::map<Int_t, std::map<Int_t, Float_t> > m_nvtxrecon_ngenint, m_murec_ngenint, m_nvtxrecon_err_ngenint, m_murec_err_ngenint;
+  std::map<Int_t, TGraphErrors*> tg_murec_muinel, tg_muvis_muinel;
+  std::map<Int_t, TGraphErrors*> tg_vtx_efficiency_muinel;
+  std::map<Int_t, TGraphErrors*> tg_diff_vtx_efficiency_muinel;
+  std::map<Int_t, TLine*> tl_average_vtx_efficiency_muinel;
+
+  std::map<Int_t, Float_t> vtx_efficiency_ngenint1;
+  std::map<Int_t, TLine*> tl_vtx_efficiency_ngenint1_x55, tl_vtx_efficiency_ngenint1_x22;
+
+  TLegend *l = new TLegend(0.55, 0.72, 0.95, 0.95);
+  l->SetFillColor(0);
+  l->SetBorderSize(1);
+  l->SetNColumns(2);
+
+  TCanvas *c_vtx_efficiency_ngenint = new TCanvas("c_vtx_efficiency_ngenint", "c_vtx_efficiency_ngenint", 1000, 1200);
+  TPad *p_vtx_efficiency_ngenint_top = new TPad("p_vtx_efficiency_ngenint_top", "p_vtx_efficiency_ngenint_top", 0., 0.333, 1., 1.);
+  p_vtx_efficiency_ngenint_top->SetBottomMargin(0.02);
+  p_vtx_efficiency_ngenint_top->Draw();
+  c_vtx_efficiency_ngenint->cd();
+  TPad *p_vtx_efficiency_ngenint_bottom = new TPad("p_vtx_efficiency_ngenint_bottom", "p_vtx_efficiency_ngenint_bottom", 0., 0., 1., 0.333);
+  p_vtx_efficiency_ngenint_bottom->SetTopMargin(0.02);
+  p_vtx_efficiency_ngenint_bottom->SetBottomMargin(0.2);
+  p_vtx_efficiency_ngenint_bottom->Draw();
+
+  TCanvas *c_vtx_efficiency_muinel = new TCanvas("c_vtx_efficiency_muinel", "c_vtx_efficiency_muinel", 1000, 1200);
+  TPad *p_vtx_efficiency_muinel_top = new TPad("p_vtx_efficiency_muinel_top", "p_vtx_efficiency_muinel_top", 0., 0.333, 1., 1.);
+  p_vtx_efficiency_muinel_top->SetBottomMargin(0.02);
+  p_vtx_efficiency_muinel_top->Draw();
+  c_vtx_efficiency_muinel->cd();
+  TPad *p_vtx_efficiency_muinel_bottom = new TPad("p_vtx_efficiency_muinel_bottom", "p_vtx_efficiency_muinel_bottom", 0., 0., 1., 0.333);
+  p_vtx_efficiency_muinel_bottom->SetTopMargin(0.01);
+  p_vtx_efficiency_muinel_bottom->SetBottomMargin(0.15);
+  p_vtx_efficiency_muinel_bottom->Draw();
+
+  TLegend *l_nolines = new TLegend(0.8, 0.75, 0.95, 0.95);
+  l_nolines->SetFillColor(0);
+  l_nolines->SetBorderSize(1);
+
+  std::map<Int_t, TGraphErrors*> tg_raw_vtx_efficiency_ngenint, tg_raw_vtx_efficiency_muinel;
+  TCanvas *c_raw_vtx_efficiency_ngenint = new TCanvas("c_raw_vtx_efficiency_ngenint", "c_raw_vtx_efficiency_ngenint", 1200, 800);
+  TCanvas *c_raw_vtx_efficiency_muinel = new TCanvas("c_raw_vtx_efficiency_muinel", "c_raw_vtx_efficiency_muinel", 1200, 800);
+
+
+  bool draw_first = true;
+
+  for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+
+    //cout << "On NTrk " << *nTrkCut << endl;
+
+    TString tgname = "tg_nvtxrecon_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_nvtxrecon_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_nvtxrecon_ngenint[*nTrkCut]->SetName(tgname);
+
+    tgname = "tg_murec_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_murec_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_murec_ngenint[*nTrkCut]->SetName(tgname);
+
+    TString bname;
+    bname = "NVtx";
+    bname += *nTrkCut;
+    bname += "_BSC";
+    for (int entry = 0; entry < n_entries; entry++) {
+      t->GetEntry(entry);
+
+      Int_t c_ngenint = t->GetLeaf("pLB")->GetValue(0);
+      Float_t c_nvtxrecon = t->GetLeaf(bname)->GetValue(0);
+      Float_t c_ntrig = (Float_t)t->GetLeaf("NTrig")->GetValue(0);
+
+      tg_nvtxrecon_ngenint[*nTrkCut]->SetPoint(entry, c_ngenint, c_nvtxrecon);
+      m_nvtxrecon_ngenint[*nTrkCut][c_ngenint] = c_nvtxrecon;
+      m_nvtxrecon_err_ngenint[*nTrkCut][c_ngenint] = TMath::Sqrt(c_nvtxrecon);
+
+      if (t->GetLeaf("NTrig")->GetValue(0) > 0) {
+        tg_murec_ngenint[*nTrkCut]->SetPoint(entry, c_ngenint, c_nvtxrecon / c_ntrig);
+        tg_murec_ngenint[*nTrkCut]->SetPointError(entry, 0., TMath::Sqrt(c_nvtxrecon) / c_ntrig);
+
+        m_murec_ngenint[*nTrkCut][c_ngenint] = 1. * c_nvtxrecon / c_ntrig;
+        m_murec_err_ngenint[*nTrkCut][c_ngenint] = 1. * TMath::Sqrt(c_nvtxrecon) / c_ntrig;
+
+      } else {
+        tg_murec_ngenint[*nTrkCut]->SetPoint(entry, c_ngenint, 0.);
+        m_murec_ngenint[*nTrkCut][c_ngenint] = 0.;
+      }
+      //cout << "pLB " << c_ngenint << " : NVtx = " << c_nvtxrecon << endl;
+      //cout << "\tmu_rec = " << m_murec_ngenint[*nTrkCut][c_ngenint] << endl;
+
+      // Get reconstruction efficiency without pileup
+      if (c_ngenint == 1) {
+        vtx_efficiency_ngenint1[*nTrkCut] = c_nvtxrecon / c_ntrig;
+      }
+    }
+
+    tgname= "tg_murec_muinel_NTrk";
+    tgname += *nTrkCut;
+    tg_murec_muinel[*nTrkCut] = new TGraphErrors(20);
+    tg_murec_muinel[*nTrkCut]->SetName(tgname);
+    Int_t point = 0;
+    for (Float_t c_muinel = 1; c_muinel <= 20; c_muinel++) {
+
+      Float_t average_murec = 0.;
+      Float_t average_murec_err = 0.;
+      Float_t weight = TMath::Exp(-1. * c_muinel); // Include the zero bin in the weight.
+
+      for (Int_t c_ngenint = 1; c_ngenint < 40; c_ngenint++) {
+        if (m_murec_ngenint[*nTrkCut][c_ngenint] == 0) {
+          continue;
+        }
+
+        Float_t poisson_factor = TMath::Exp(-1. * c_muinel) * TMath::Power(c_muinel, c_ngenint) / TMath::Factorial(c_ngenint);
+        average_murec += poisson_factor * m_murec_ngenint[*nTrkCut][c_ngenint];
+        average_murec_err += TMath::Power(poisson_factor * m_murec_err_ngenint[*nTrkCut][c_ngenint], 2);
+
+        weight += poisson_factor;
+      }
+      average_murec = average_murec / weight;
+      average_murec_err = TMath::Sqrt(average_murec_err) / weight;
+      tg_murec_muinel[*nTrkCut]->SetPoint(point, c_muinel, average_murec);
+      tg_murec_muinel[*nTrkCut]->SetPointError(point, 0., average_murec_err);
+
+      point++;
+    }
+
+    // Apply pileup corrections
+    tgname = "tg_muvis_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_muvis_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_muvis_ngenint[*nTrkCut]->SetName(tgname);
+
+    //FakeCorrection *fc = new FakeCorrection("mc_8TeV_17.2_default", *nTrkCut);
+    FakeCorrection *fc = new FakeCorrection(corrections_tag, *nTrkCut);
+
+    PileupMaskingCorrection *mc = new PileupMaskingCorrection(corrections_tag, *nTrkCut);
+    TString hname = "hist/PriVtxZpLB_BCID0";
+    TH2D *h_z_plb = (TH2D*)f_histograms->Get(hname);
+    TH1D *h_z = (TH1D*)h_z_plb->ProjectionX();
+    hname = "h_z_NTrk";
+    hname += *nTrkCut;
+    h_z->SetName(hname);
+
+    TString pmc_tag = corrections_tag;
+    pmc_tag += *nTrkCut;
+    mc->GenerateDzDistribution(h_z, pmc_tag);
+    mc->GenerateCorrection(mc->GetExpectedDzDistribution());
+
+    for (int i=0; i < tg_murec_ngenint[*nTrkCut]->GetN(); i++) {
+      Double_t mu_raw = tg_murec_ngenint[*nTrkCut]->GetY()[i];
+      Double_t initial_masking_correction_factor = mc->GetCorrectionFactor(mu_raw);
+      if (initial_masking_correction_factor < 1.) {
+        initial_masking_correction_factor = 1.;
+      }
+      /* Subtraction method*/
+
+      Double_t mu_fake = fc->GetFakeMuFromMuReconMC(mu_raw * initial_masking_correction_factor);
+
+      Double_t mu_real = mu_raw - mu_fake;
+      Double_t final_masking_correction_factor = mc->GetCorrectionFactor(mu_real);
+      Double_t mu_vis = mu_real * final_masking_correction_factor;
+
+      Double_t mu_vis_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i] * final_masking_correction_factor;
+
+      /* Multiplication method */
+      /*
+      Double_t fake_fraction = fc->GetFakeFractionFromMuReconMC(mu_raw * initial_masking_correction_factor);
+      Double_t mu_vis = mu_raw * (1. - fake_fraction) * initial_masking_correction_factor;
+      */
+      tg_muvis_ngenint[*nTrkCut]->SetPoint(i, tg_murec_ngenint[*nTrkCut]->GetX()[i], mu_vis);
+      tg_muvis_ngenint[*nTrkCut]->SetPointError(i, 0., mu_vis_err);
+
+    }
+
+    tgname = "tg_muvis_muinel_NTrk";
+    tgname += *nTrkCut;
+    tg_muvis_muinel[*nTrkCut] = new TGraphErrors(20);
+    tg_muvis_muinel[*nTrkCut]->SetName(tgname);
+
+    for (int i = 0; i < 20; i++) {
+      Float_t mu_raw = tg_murec_muinel[*nTrkCut]->GetY()[i];
+
+      Double_t initial_masking_correction_factor = mc->GetCorrectionFactor(mu_raw);
+      if (initial_masking_correction_factor < 1.) {
+        initial_masking_correction_factor = 1.;
+      }
+      /* Subtraction method*/
+
+      Double_t mu_fake = fc->GetFakeMuFromMuReconMC(mu_raw * initial_masking_correction_factor);
+
+      Double_t mu_real = mu_raw - mu_fake;
+      Double_t final_masking_correction_factor = mc->GetCorrectionFactor(mu_real);
+      Double_t mu_vis = mu_real * final_masking_correction_factor;
+
+      Double_t mu_vis_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i] * final_masking_correction_factor;
+
+      tg_muvis_muinel[*nTrkCut]->SetPoint(i, tg_murec_muinel[*nTrkCut]->GetX()[i], mu_vis);
+      tg_muvis_muinel[*nTrkCut]->SetPointError(i, 0., mu_vis_err);
+    }
+
+    tgname = "tg_vtx_efficiency_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_vtx_efficiency_ngenint[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->SetName(tgname);
+
+    for (int i=0; i < tg_muvis_ngenint[*nTrkCut]->GetN(); i++) {
+      if (tg_muvis_ngenint[*nTrkCut]->GetY()[i] == 0) {
+        continue;
+      }
+      tg_vtx_efficiency_ngenint[*nTrkCut]->SetPoint(i, tg_muvis_ngenint[*nTrkCut]->GetX()[i], tg_muvis_ngenint[*nTrkCut]->GetY()[i] / tg_muvis_ngenint[*nTrkCut]->GetX()[i] * 100.);
+      tg_vtx_efficiency_ngenint[*nTrkCut]->SetPointError(i, 0., tg_muvis_ngenint[*nTrkCut]->GetEY()[i] / tg_muvis_ngenint[*nTrkCut]->GetX()[i] * 100.);
+    }
+
+    tgname = "tg_vtx_efficiency_muinel_NTrk";
+    tgname += *nTrkCut;
+    tg_vtx_efficiency_muinel[*nTrkCut] = new TGraphErrors(n_entries);
+    tg_vtx_efficiency_muinel[*nTrkCut]->SetName(tgname);
+
+    for (int i=0; i < tg_muvis_muinel[*nTrkCut]->GetN(); i++) {
+      tg_vtx_efficiency_muinel[*nTrkCut]->SetPoint(i, tg_muvis_muinel[*nTrkCut]->GetX()[i], tg_muvis_muinel[*nTrkCut]->GetY()[i] / tg_muvis_muinel[*nTrkCut]->GetX()[i]);
+      tg_vtx_efficiency_muinel[*nTrkCut]->SetPointError(i, 0., tg_muvis_muinel[*nTrkCut]->GetEY()[i] / tg_muvis_muinel[*nTrkCut]->GetX()[i]);
+    }
+
+    // -- Calculate average
+    Double_t average = 0.;
+    Int_t points = 0;
+    for (int i = 0; i < tg_vtx_efficiency_ngenint[*nTrkCut]->GetN(); i++) {
+      if (tg_vtx_efficiency_ngenint[*nTrkCut]->GetY()[i] > 0) {
+        if (tg_vtx_efficiency_ngenint[*nTrkCut]->GetY()[i] <= 0) {
+          continue;
+        }
+        average += tg_vtx_efficiency_ngenint[*nTrkCut]->GetY()[i];
+        points++;
+      }
+    }
+    average = average / points;
+    //cout << "Average = " << average << endl;
+    tl_average_vtx_efficiency_ngenint[*nTrkCut] = new TLine(0, average, 20, average);
+    tl_average_vtx_efficiency_ngenint[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]);
+    tl_average_vtx_efficiency_ngenint[*nTrkCut]->SetLineStyle(2);
+
+    TString fname = "f_vtx_efficiency_linear_NTrk";
+    fname += *nTrkCut;
+    f_vtx_efficiency_linear[*nTrkCut] = new TF1(fname, "[0] + [1] * x", 0., 20.);
+    f_vtx_efficiency_linear[*nTrkCut]->SetParameter(0, average);
+    f_vtx_efficiency_linear[*nTrkCut]->SetParameter(1, 0.);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->Fit(f_vtx_efficiency_linear[*nTrkCut], "QR0");
+    cout << "Fit results for NTrk" << *nTrkCut << ":" << endl;
+    cout << "\teff(mu) = [0] + [1] * x" << endl;
+    cout << "\t [0] = " << f_vtx_efficiency_linear[*nTrkCut]->GetParameter(0) << " +/- " << f_vtx_efficiency_linear[*nTrkCut]->GetParError(0) << endl;
+    cout << "\t [1] = " << f_vtx_efficiency_linear[*nTrkCut]->GetParameter(1) << " +/- " << f_vtx_efficiency_linear[*nTrkCut]->GetParError(1) << endl;
+    cout << "\t chi2/ndf = " << f_vtx_efficiency_linear[*nTrkCut]->GetChisquare() << " / " << f_vtx_efficiency_linear[*nTrkCut]->GetNDF() << " = " << f_vtx_efficiency_linear[*nTrkCut]->GetChisquare() / f_vtx_efficiency_linear[*nTrkCut]->GetNDF() << endl;
+
+
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut] = GetPercentDifference(tg_vtx_efficiency_ngenint[*nTrkCut], average);
+    ApplyXshift(tg_diff_vtx_efficiency_ngenint[*nTrkCut], x_shifts[*nTrkCut]);
+
+    average = 0.;
+    points = 0;
+    for (int i = 0; i < tg_vtx_efficiency_muinel[*nTrkCut]->GetN(); i++) {
+      if (tg_vtx_efficiency_muinel[*nTrkCut]->GetY()[i] > 0) {
+        average += tg_vtx_efficiency_muinel[*nTrkCut]->GetY()[i];
+        points++;
+      }
+    }
+    average = average / points;
+    cout << "Average = " << average << endl;
+    tl_average_vtx_efficiency_muinel[*nTrkCut] = new TLine(0, average, 22, average);
+    tl_average_vtx_efficiency_muinel[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]);
+    tl_average_vtx_efficiency_muinel[*nTrkCut]->SetLineStyle(2);
+
+    tg_diff_vtx_efficiency_muinel[*nTrkCut] = GetPercentDifference(tg_vtx_efficiency_muinel[*nTrkCut], average);
+
+    TString draw_options;
+    if (draw_first) {
+      draw_first = false;
+      draw_options = "ap";
+    } else {
+      draw_options = "p";
+    }
+
+    // -- Also, make a TLine showing the reconstruction efficiency at NGenInt=1
+    tl_vtx_efficiency_ngenint1_x55[*nTrkCut] = new TLine(0, vtx_efficiency_ngenint1[*nTrkCut], 55, vtx_efficiency_ngenint1[*nTrkCut]);
+    tl_vtx_efficiency_ngenint1_x55[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]);
+    tl_vtx_efficiency_ngenint1_x55[*nTrkCut]->SetLineStyle(1);
+    tl_vtx_efficiency_ngenint1_x22[*nTrkCut] = new TLine(0, vtx_efficiency_ngenint1[*nTrkCut], 22, vtx_efficiency_ngenint1[*nTrkCut]);
+    tl_vtx_efficiency_ngenint1_x22[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]);
+    tl_vtx_efficiency_ngenint1_x22[*nTrkCut]->SetLineStyle(1);
+
+    c_vtx_efficiency_ngenint->cd();
+    p_vtx_efficiency_ngenint_top->cd();
+    tg_vtx_efficiency_ngenint[*nTrkCut]->SetMinimum(30);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->SetMaximum(90);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitle("NGenInt");
+    tg_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetLabelSize(0.);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitleSize(0.);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->GetYaxis()->SetTitle("Vertex Efficiency (%)");
+    tg_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->Set(100, 0., 20.);
+    tg_vtx_efficiency_ngenint[*nTrkCut]->Draw(draw_options);
+
+    f_vtx_efficiency_linear[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]+1);
+    f_vtx_efficiency_linear[*nTrkCut]->SetLineStyle(1);
+    f_vtx_efficiency_linear[*nTrkCut]->SetLineWidth(1);
+    f_vtx_efficiency_linear[*nTrkCut]->Draw("same");
+
+    //tl_average_vtx_efficiency_ngenint[*nTrkCut]->Draw("same");
+    //tl_vtx_efficiency_ngenint1_x55[*nTrkCut]->Draw("same");
+
+    c_vtx_efficiency_ngenint->cd();
+    p_vtx_efficiency_ngenint_bottom->cd();
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->SetMinimum(-6.);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->SetMaximum(6.);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->SetLineColor(marker_colors[*nTrkCut]);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitle("#mu_{inel}");
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetYaxis()->SetTitle("% from average");
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetYaxis()->SetTitleSize(0.08);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitleSize(0.08);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetYaxis()->SetTitleOffset(0.7);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitleOffset(0.7);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->Set(100, 0., 20.);
+    tg_diff_vtx_efficiency_ngenint[*nTrkCut]->Draw(draw_options);
+
+    // Draw -1, 0, 1% lines
+    if (draw_options == "ap") {
+      TLine *tl_zero = new TLine(0., 0., tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->GetXmax(), 0.);
+      tl_zero->SetLineStyle(1);
+      tl_zero->SetLineColor(kGray);
+      tl_zero->Draw("same");
+
+      TLine *tl_plus = new TLine(0., 1., tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->GetXmax(), 1.);
+      tl_plus->SetLineStyle(1);
+      tl_plus->SetLineColor(kGray+3);
+      tl_plus->Draw("same");
+
+      TLine *tl_minus = new TLine(0., -1., tg_diff_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->GetXmax(), -1.);
+      tl_minus->SetLineStyle(1);
+      tl_minus->SetLineColor(kGray+3);
+      tl_minus->Draw("same");
+    }
+
+    // Optionally, draw a label on the plot specifying which sample is used.
+    if (draw_options == "ap") {
+      myText(0.01, 0.01, kBlack, input_tag, 0.5);
+    }
+
+
+
+    // Now vs. artificially generated mu_inel
+
+    c_vtx_efficiency_muinel->cd();
+    p_vtx_efficiency_muinel_top->cd();
+    tg_vtx_efficiency_muinel[*nTrkCut]->SetMinimum(0.3);
+    tg_vtx_efficiency_muinel[*nTrkCut]->SetMaximum(0.9);
+    tg_vtx_efficiency_muinel[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_vtx_efficiency_muinel[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->SetLabelSize(0.);
+    tg_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->SetTitleSize(0.);
+    tg_vtx_efficiency_muinel[*nTrkCut]->GetYaxis()->SetTitle("Vertex Efficiency");
+    tg_vtx_efficiency_muinel[*nTrkCut]->Draw(draw_options);
+    tl_average_vtx_efficiency_muinel[*nTrkCut]->Draw("same");
+    tl_vtx_efficiency_ngenint1_x22[*nTrkCut]->Draw("same");
+
+    p_vtx_efficiency_muinel_bottom->cd();
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->SetMinimum(-5.);
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->SetMaximum(5.);
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->SetTitle("#mu_{inel}");
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->GetYaxis()->SetTitle("% from average");
+    tg_diff_vtx_efficiency_muinel[*nTrkCut]->Draw(draw_options);
+
+    // Draw -1, 0, 1% lines
+    if (draw_options == "ap") {
+      TLine *tl_zero = new TLine(0., 0., tg_diff_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->GetXmax(), 0.);
+      tl_zero->SetLineStyle(1);
+      tl_zero->SetLineColor(kGray);
+      tl_zero->Draw("same");
+
+      TLine *tl_plus = new TLine(0., 1., tg_diff_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->GetXmax(), 1.);
+      tl_plus->SetLineStyle(1);
+      tl_plus->SetLineColor(kGray+3);
+      tl_plus->Draw("same");
+
+      TLine *tl_minus = new TLine(0., -1., tg_diff_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->GetXmax(), -1.);
+      tl_minus->SetLineStyle(1);
+      tl_minus->SetLineColor(kGray+3);
+      tl_minus->Draw("same");
+    }
+
+
+    TString legend_entry = "NTrk";
+    legend_entry += *nTrkCut;
+    l->AddEntry(tg_vtx_efficiency_muinel[*nTrkCut], legend_entry, "p");
+    l_nolines->AddEntry(tg_vtx_efficiency_muinel[*nTrkCut], legend_entry, "p");
+    legend_entry = "NTrk";
+    legend_entry += *nTrkCut;
+    legend_entry += " fit";
+    l->AddEntry(f_vtx_efficiency_linear[*nTrkCut], legend_entry, "l");
+    //legend_entry = "NTrk"; legend_entry += *nTrkCut; legend_entry += " mean";
+    //l->AddEntry(tl_average_vtx_efficiency_muinel[*nTrkCut], legend_entry, "l");
+    //legend_entry = "NTrk"; legend_entry += *nTrkCut; legend_entry += "w/o pileup";
+    //l->AddEntry(tl_vtx_efficiency_ngenint1_x22[*nTrkCut], legend_entry, "l");
+
+    // -- Raw vertex efficiencies, for comparison
+    cout << "[McClosure] INFO : Raw vertex efficiencies" << endl;
+    c_raw_vtx_efficiency_ngenint->cd();
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut] = new TGraphErrors(tg_murec_ngenint[*nTrkCut]->GetN());
+    tgname = "tg_raw_vtx_efficiency_ngenint_NTrk";
+    tgname += *nTrkCut;
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetName(tgname);
+
+    for (int i = 0; i < tg_murec_ngenint[*nTrkCut]->GetN(); i++) {
+      tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetPoint(i, tg_murec_ngenint[*nTrkCut]->GetX()[i], tg_murec_ngenint[*nTrkCut]->GetY()[i] / tg_murec_ngenint[*nTrkCut]->GetX()[i]);
+      tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetPointError(i, 0., tg_murec_ngenint[*nTrkCut]->GetEY()[i] / tg_murec_ngenint[*nTrkCut]->GetX()[i]);
+    }
+
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetMinimum(0.2);
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetMaximum(0.9);
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->GetXaxis()->SetTitle("NGenInt");
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->GetYaxis()->SetTitle("Raw Vertex Efficiency");
+    tg_raw_vtx_efficiency_ngenint[*nTrkCut]->Draw(draw_options);
+
+    c_raw_vtx_efficiency_muinel->cd();
+    tg_raw_vtx_efficiency_muinel[*nTrkCut] = new TGraphErrors(tg_murec_muinel[*nTrkCut]->GetN());
+    tgname = "tg_raw_vtx_efficiency_muinel_NTrk";
+    tgname += *nTrkCut;
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetName(tgname);
+
+    for (int i = 0; i < tg_murec_muinel[*nTrkCut]->GetN(); i++) {
+      tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetPoint(i, tg_murec_muinel[*nTrkCut]->GetX()[i], tg_murec_muinel[*nTrkCut]->GetY()[i] / tg_murec_muinel[*nTrkCut]->GetX()[i]);
+      tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetPointError(i, 0., tg_murec_muinel[*nTrkCut]->GetEY()[i] / tg_murec_muinel[*nTrkCut]->GetX()[i]);
+    }
+
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetMinimum(0.2);
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetMaximum(0.9);
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetMarkerStyle(marker_styles[*nTrkCut]);
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->SetMarkerColor(marker_colors[*nTrkCut]);
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->GetXaxis()->SetTitle("#mu_{inel}");
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->GetYaxis()->SetTitle("Raw Vertex Efficiency");
+    tg_raw_vtx_efficiency_muinel[*nTrkCut]->Draw(draw_options);
+
+
+
+  }
+  cout << "All done." << endl;
+  c_vtx_efficiency_ngenint->cd();
+  l->Draw();
+  c_vtx_efficiency_ngenint->SaveAs(TString("/u/dryu/Luminosity/Data/McClosure/") + output_prefix + TString("/c_vtx_efficiency_ngenint.pdf"));
+
+  c_vtx_efficiency_muinel->cd();
+  l->Draw();
+  c_vtx_efficiency_muinel->SaveAs(TString("/u/dryu/Luminosity/Data/McClosure/") + output_prefix + TString("/c_vtx_efficiency_muinel.pdf"));
+
+  c_raw_vtx_efficiency_ngenint->cd();
+  l_nolines->Draw();
+  c_raw_vtx_efficiency_ngenint->SaveAs(TString("/u/dryu/Luminosity/Data/McClosure/") + output_prefix + TString("/c_raw_vtx_efficiency_ngenint.pdf"));
+
+  c_raw_vtx_efficiency_muinel->cd();
+  l_nolines->Draw();
+  c_raw_vtx_efficiency_muinel->SaveAs(TString("/u/dryu/Luminosity/Data/McClosure/") + output_prefix + TString("/c_raw_vtx_efficiency_muinel.pdf"));
+
+}
+
+TGraphErrors* GetPercentDifference(TGraphErrors *tg_in, Double_t value) {
+
+  cout << "[MCClosure] DEBUG : GetPercentDifference(" << tg_in->GetName() << ", " << value << ")" << endl;
+
+  TGraphErrors *tg_out = new TGraphErrors(tg_in->GetN());
+  tg_out->SetName(tg_in->GetName() + TString("_difference"));
+
+  for (int i = 0; i < tg_in->GetN(); i++) {
+
+    tg_out->SetPoint(i, tg_in->GetX()[i], (tg_in->GetY()[i] - value) / value * 100.);
+    tg_out->SetPointError(i, 0., tg_in->GetEY()[i] / value * 100.);
+
+  }
+
+  return tg_out;
+
+}
+
+void ApplyXshift(TGraphErrors *tg_in, Float_t shift) {
+
+  cout << "[McClosure] INFO : ApplyXshift()..." << std::flush;
+  for (int i = 0; i < tg_in->GetN(); i++) {
+    tg_in->SetPoint(i, tg_in->GetX()[i] + shift, tg_in->GetY()[i]);
+    tg_in->SetPointError(i, tg_in->GetEX()[i], tg_in->GetEY()[i]);
+  }
+  cout << "done" << endl;
+
+}

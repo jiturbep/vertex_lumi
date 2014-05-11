@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage[table]{xcolor}
+\usepackage[landscape]{geometry}
+\definecolor{complement}{RGB}{255,0,0}
+
+\begin{document}
+\large Visible cross section for normal settings
+\begin{table}
+	\scriptsize
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		Scan/BCID\ \ NTrk & 2& 3& 4& 5& 7& 10 \\
+		\hline
+		1 / 81 & nan $\pm$ nan & 47.26 $\pm$ 0.04 & 42.81 $\pm$ 0.04 & 38.8 $\pm$ 0.04 & 32.33 $\pm$ 0.03 & 25.27 $\pm$ 0.03\\
+		\hline
+		1 / 867 & nan $\pm$ nan & 47.3 $\pm$ 0.04 & 42.9 $\pm$ 0.04 & 38.89 $\pm$ 0.03 & 32.39 $\pm$ 0.03 & 25.29 $\pm$ 0.03\\
+		\hline
+		1 / 2752 & nan $\pm$ nan & 46.92 $\pm$ 0.04 & 42.54 $\pm$ 0.04 & 38.57 $\pm$ 0.03 & 32.12 $\pm$ 0.03 & 25.09 $\pm$ 0.03\\
+		\hline
+		2 / 81 & nan $\pm$ nan & 47.46 $\pm$ 0.04 & 42.98 $\pm$ 0.04 & 38.93 $\pm$ 0.04 & 32.43 $\pm$ 0.03 & 25.33 $\pm$ 0.03\\
+		\hline
+		2 / 867 & nan $\pm$ nan & 47.35 $\pm$ 0.04 & 42.92 $\pm$ 0.04 & 38.89 $\pm$ 0.03 & 32.39 $\pm$ 0.03 & 25.31 $\pm$ 0.03\\
+		\hline
+		2 / 2752 & nan $\pm$ nan & 47.25 $\pm$ 0.04 & 42.83 $\pm$ 0.04 & 38.83 $\pm$ 0.03 & 32.33 $\pm$ 0.03 & 25.26 $\pm$ 0.03\\
+		\hline
+		\textcolor{complement}{Scan 1 Avg} & \textcolor{complement}{nan $\pm$ nan} & \textcolor{complement}{47.1609 $\pm$ 0.02233} & \textcolor{complement}{42.7494 $\pm$ 0.02129} & \textcolor{complement}{38.7552 $\pm$ 0.02031} & \textcolor{complement}{32.2816 $\pm$ 0.01856} & \textcolor{complement}{25.2194 $\pm$ 0.01646}\\
+		\hline
+		Scan 1 RMS & nan & 0.17 & 0.15 & 0.13 & 0.12 & 0.092\\
+		\hline
+		\textcolor{complement}{Scan 2 Avg} & \textcolor{complement}{nan $\pm$ nan} & \textcolor{complement}{47.3546 $\pm$ 0.02266} & \textcolor{complement}{42.9109 $\pm$ 0.02159} & \textcolor{complement}{38.8858 $\pm$ 0.02059} & \textcolor{complement}{32.3857 $\pm$ 0.01881} & \textcolor{complement}{25.2993 $\pm$ 0.01669}\\
+		\hline
+		Scan 2 RMS & nan & 0.086 & 0.063 & 0.044 & 0.04 & 0.026\\
+		\hline
+		\textcolor{complement}{Total Avg} & \textcolor{complement}{nan $\pm$ nan} & \textcolor{complement}{47.2571 $\pm$ 0.01591} & \textcolor{complement}{42.8296 $\pm$ 0.01516} & \textcolor{complement}{38.8201 $\pm$ 0.01446} & \textcolor{complement}{32.3333 $\pm$ 0.01321} & \textcolor{complement}{25.2591 $\pm$ 0.01172}\\
+		\hline
+		Total RMS & nan & 0.16 & 0.14 & 0.12 & 0.1 & 0.079\\
+		\hline
+
+
+	\end{tabular}
+\end{table}
+
+
+\end{document}

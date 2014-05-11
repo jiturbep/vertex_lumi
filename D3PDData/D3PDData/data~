@@ -1,0 +1,453 @@
+#if defined INPUT_DATA
+
+//////////////////////////////////////////////////////////
+// This class has been automatically generated on
+// Sat Apr  7 05:06:37 2012 by ROOT version 5.32/01
+// from TTree VtxTree/VtxTree
+// found on file: user.spagan.005996.EXT0._00500.VTXD3PD.root
+//////////////////////////////////////////////////////////
+
+#ifndef VtxTree_h
+#define VtxTree_h
+
+#include <TROOT.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TSelector.h>
+
+// Header file for the classes stored in the TTree if any.
+#include <vector>
+
+// Fixed size dimensions of array or collections stored in the TTree if any.
+
+using namespace std;
+
+class VtxTree : public TSelector {
+  public :
+    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+
+    Bool_t          bkgword_MBTSTimeHaloBit;
+    Bool_t          bkgword_MBTSTimeColBit;
+    Bool_t          bkgword_LArECTimeHaloBit;
+    Bool_t          bkgword_LArECTimeColBit;
+    Bool_t          bkgword_PixMultiHugeBit;
+    Bool_t          bkgword_PixSPNonEmptyBit;
+    Bool_t          bkgword_SCTMultiHugeBit;
+    Bool_t          bkgword_SCTSPNonEmptyBit;
+    Bool_t          bkgword_CSCTimeHaloBit;
+    Bool_t          bkgword_CSCTimeColBit;
+    Bool_t          bkgword_BCMTimeHaloBit;
+    Bool_t          bkgword_BCMTimeColBit;
+    Bool_t          bkgword_MuonTimingColBit;
+    Bool_t          bkgword_MuonTimingCosmicBit;
+    Bool_t          bkgword_MBTSBeamVetoBit;
+    Bool_t          bkgword_BCMBeamVetoBit;
+    Bool_t          bkgword_LUCIDBeamVetoBit;
+    UInt_t          bkgword_BkgWord;
+    std::vector<float>   *trk_cov_d0;
+    std::vector<float>   *trk_cov_z0;
+    std::vector<float>   *trk_cov_phi;
+    std::vector<float>   *trk_cov_theta;
+    std::vector<float>   *trk_cov_qoverp;
+    std::vector<float>   *trk_cov_d0_z0;
+    std::vector<float>   *trk_cov_d0_phi;
+    std::vector<float>   *trk_cov_d0_theta;
+    std::vector<float>   *trk_cov_d0_qoverp;
+    std::vector<float>   *trk_cov_z0_phi;
+    std::vector<float>   *trk_cov_z0_theta;
+    std::vector<float>   *trk_cov_z0_qoverp;
+    std::vector<float>   *trk_cov_phi_theta;
+    std::vector<float>   *trk_cov_phi_qoverp;
+    std::vector<float>   *trk_cov_theta_qoverp;
+    std::vector<float>   *trk_IPEstimate_d0_unbiased_wrtPV;
+    std::vector<float>   *trk_IPEstimate_z0_unbiased_wrtPV;
+    std::vector<float>   *trk_IPEstimate_err_d0_unbiased_wrtPV;
+    std::vector<float>   *trk_IPEstimate_err_z0_unbiased_wrtPV;
+    std::vector<float>   *trk_IPEstimate_errPV_d0_unbiased_wrtPV;
+    std::vector<float>   *trk_IPEstimate_errPV_z0_unbiased_wrtPV;
+    std::vector<float>   *trk_cov_d0_wrtPV;
+    std::vector<float>   *trk_cov_z0_wrtPV;
+    std::vector<float>   *trk_cov_phi_wrtPV;
+    std::vector<float>   *trk_cov_theta_wrtPV;
+    std::vector<float>   *trk_cov_qoverp_wrtPV;
+    std::vector<float>   *trk_d0_wrtBS;
+    std::vector<float>   *trk_z0_wrtBS;
+    std::vector<float>   *trk_phi_wrtBS;
+    std::vector<float>   *trk_cov_d0_wrtBS;
+    std::vector<float>   *trk_cov_z0_wrtBS;
+    std::vector<float>   *trk_cov_phi_wrtBS;
+    std::vector<float>   *trk_cov_theta_wrtBS;
+    std::vector<float>   *trk_cov_qoverp_wrtBS;
+    std::vector<float>   *trk_chi2;
+    std::vector<int>     *trk_ndof;
+    std::vector<int>     *trk_nBLHits;
+    std::vector<int>     *trk_nPixHits;
+    std::vector<int>     *trk_nSCTHits;
+    std::vector<int>     *trk_nTRTHits;
+    std::vector<int>     *trk_nTRTHighTHits;
+    std::vector<int>     *trk_nPixHoles;
+    std::vector<int>     *trk_nSCTHoles;
+    std::vector<int>     *trk_nTRTHoles;
+    std::vector<int>     *trk_nPixelDeadSensors;
+    std::vector<int>     *trk_nSCTDeadSensors;
+    std::vector<int>     *trk_nBLSharedHits;
+    std::vector<int>     *trk_nPixSharedHits;
+    std::vector<int>     *trk_nSCTSharedHits;
+    std::vector<int>     *trk_nBLayerSplitHits;
+    std::vector<int>     *trk_nPixSplitHits;
+    std::vector<int>     *trk_expectBLayerHit;
+    std::vector<int>     *trk_nHits;
+    std::vector<int>     *trk_hitPattern;
+    std::vector<float>   *trk_TRTHighTHitsRatio;
+    std::vector<float>   *trk_TRTHighTOutliersRatio;
+    std::vector<int>     *trk_fitter;
+    std::vector<int>     *trk_patternReco1;
+    std::vector<int>     *trk_patternReco2;
+    std::vector<int>     *trk_trackProperties;
+    std::vector<int>     *trk_particleHypothesis;
+    std::vector<float>   *trk_vx_weight;
+    Float_t         beamSpot_x;
+    Float_t         beamSpot_y;
+    Float_t         beamSpot_z;
+    Float_t         beamSpot_sigma_x;
+    Float_t         beamSpot_sigma_y;
+    Float_t         beamSpot_sigma_z;
+    Float_t         beamSpot_tilt_x;
+    Float_t         beamSpot_tilt_y;
+    Int_t           vxbc_n;
+    std::vector<float>   *vxbc_x;
+    std::vector<float>   *vxbc_y;
+    std::vector<float>   *vxbc_z;
+    std::vector<float>   *vxbc_cov_x;
+    std::vector<float>   *vxbc_cov_y;
+    std::vector<float>   *vxbc_cov_z;
+    std::vector<float>   *vxbc_cov_xy;
+    std::vector<float>   *vxbc_cov_xz;
+    std::vector<float>   *vxbc_cov_yz;
+    std::vector<int>     *vxbc_type;
+    std::vector<float>   *vxbc_chi2;
+    std::vector<int>     *vxbc_ndof;
+    std::vector<float>   *vxbc_px;
+    std::vector<float>   *vxbc_py;
+    std::vector<float>   *vxbc_pz;
+    std::vector<float>   *vxbc_E;
+    std::vector<float>   *vxbc_m;
+    std::vector<int>     *vxbc_nTracks;
+    std::vector<float>   *vxbc_sumPt;
+    std::vector<std::vector<float> > *vxbc_trk_weight;
+    std::vector<int>     *vxbc_trk_n;
+    std::vector<std::vector<int> > *vxbc_trk_index;
+    Float_t         METRefFinal_etx;
+    Float_t         METRefFinal_ety;
+    Float_t         METRefFinal_phi;
+    Float_t         METRefFinal_et;
+    Float_t         METRefFinal_sumet;
+    Int_t           muid_n;
+    std::vector<float>   *muid_E;
+    std::vector<float>   *muid_pt;
+    std::vector<float>   *muid_m;
+    std::vector<float>   *muid_eta;
+    std::vector<float>   *muid_phi;
+    std::vector<float>   *muid_px;
+    std::vector<float>   *muid_py;
+    std::vector<float>   *muid_pz;
+    std::vector<float>   *muid_charge;
+    std::vector<unsigned short> *muid_allauthor;
+    std::vector<int>     *muid_hastrack;
+    Int_t           el_n;
+    std::vector<float>   *el_E;
+    std::vector<float>   *el_Et;
+    std::vector<float>   *el_pt;
+    std::vector<float>   *el_m;
+    std::vector<float>   *el_eta;
+    std::vector<float>   *el_phi;
+    std::vector<float>   *el_px;
+    std::vector<float>   *el_py;
+    std::vector<float>   *el_pz;
+    std::vector<float>   *el_charge;
+    std::vector<int>     *el_author;
+    std::vector<unsigned int> *el_isEM;
+    std::vector<unsigned int> *el_isEMLoose;
+    std::vector<unsigned int> *el_isEMMedium;
+    std::vector<unsigned int> *el_isEMTight;
+    std::vector<unsigned int> *el_OQ;
+    std::vector<int>     *el_convFlag;
+    std::vector<int>     *el_isConv;
+    std::vector<int>     *el_nConv;
+    std::vector<int>     *el_nSingleTrackConv;
+    std::vector<int>     *el_nDoubleTrackConv;
+    std::vector<int>     *el_mediumWithoutTrack;
+    std::vector<int>     *el_mediumIsoWithoutTrack;
+    std::vector<int>     *el_tightWithoutTrack;
+    std::vector<int>     *el_tightIsoWithoutTrack;
+    std::vector<int>     *el_loose;
+    std::vector<int>     *el_looseIso;
+    std::vector<int>     *el_medium;
+    std::vector<int>     *el_mediumIso;
+    std::vector<int>     *el_tight;
+    std::vector<int>     *el_tightIso;
+    std::vector<int>     *el_loosePP;
+    std::vector<int>     *el_loosePPIso;
+    std::vector<int>     *el_mediumPP;
+    std::vector<int>     *el_mediumPPIso;
+    std::vector<int>     *el_tightPP;
+    std::vector<int>     *el_tightPPIso;
+    std::vector<int>     *el_goodOQ;
+    std::vector<int>     *el_refittedTrack_n;
+    std::vector<float>   *el_vertweight;
+    std::vector<int>     *el_hastrack;
+    Int_t           jet_n;
+    std::vector<float>   *jet_E;
+    std::vector<float>   *jet_pt;
+    std::vector<float>   *jet_m;
+    std::vector<float>   *jet_eta;
+    std::vector<float>   *jet_phi;
+    std::vector<float>   *jet_emfrac;
+    std::vector<float>   *jet_jvtx_x;
+    std::vector<float>   *jet_jvtx_y;
+    std::vector<float>   *jet_jvtx_z;
+    std::vector<float>   *jet_jvtxf;
+    std::vector<float>   *jet_flavor_weight_Comb;
+    std::vector<float>   *jet_flavor_weight_MV1;
+    std::vector<float>   *jet_flavor_weight_JetFitterCOMBNN;
+    std::vector<float>   *jet_el_dr;
+    std::vector<int>     *jet_el_matched;
+    std::vector<float>   *jet_mu_dr;
+    std::vector<int>     *jet_mu_matched;
+    std::vector<float>   *jet_L1_dr;
+    std::vector<int>     *jet_L1_matched;
+    std::vector<float>   *jet_L2_dr;
+    std::vector<int>     *jet_L2_matched;
+    std::vector<float>   *jet_EF_dr;
+    std::vector<int>     *jet_EF_matched;
+
+    TBranch        *b_bkgword_MBTSTimeHaloBit;   //!
+    TBranch        *b_bkgword_MBTSTimeColBit;   //!
+    TBranch        *b_bkgword_LArECTimeHaloBit;   //!
+    TBranch        *b_bkgword_LArECTimeColBit;   //!
+    TBranch        *b_bkgword_PixMultiHugeBit;   //!
+    TBranch        *b_bkgword_PixSPNonEmptyBit;   //!
+    TBranch        *b_bkgword_SCTMultiHugeBit;   //!
+    TBranch        *b_bkgword_SCTSPNonEmptyBit;   //!
+    TBranch        *b_bkgword_CSCTimeHaloBit;   //!
+    TBranch        *b_bkgword_CSCTimeColBit;   //!
+    TBranch        *b_bkgword_BCMTimeHaloBit;   //!
+    TBranch        *b_bkgword_BCMTimeColBit;   //!
+    TBranch        *b_bkgword_MuonTimingColBit;   //!
+    TBranch        *b_bkgword_MuonTimingCosmicBit;   //!
+    TBranch        *b_bkgword_MBTSBeamVetoBit;   //!
+    TBranch        *b_bkgword_BCMBeamVetoBit;   //!
+    TBranch        *b_bkgword_LUCIDBeamVetoBit;   //!
+    TBranch        *b_bkgword_BkgWord;   //!
+    TBranch        *b_trk_cov_d0;   //!
+    TBranch        *b_trk_cov_z0;   //!
+    TBranch        *b_trk_cov_phi;   //!
+    TBranch        *b_trk_cov_theta;   //!
+    TBranch        *b_trk_cov_qoverp;   //!
+    TBranch        *b_trk_cov_d0_z0;   //!
+    TBranch        *b_trk_cov_d0_phi;   //!
+    TBranch        *b_trk_cov_d0_theta;   //!
+    TBranch        *b_trk_cov_d0_qoverp;   //!
+    TBranch        *b_trk_cov_z0_phi;   //!
+    TBranch        *b_trk_cov_z0_theta;   //!
+    TBranch        *b_trk_cov_z0_qoverp;   //!
+    TBranch        *b_trk_cov_phi_theta;   //!
+    TBranch        *b_trk_cov_phi_qoverp;   //!
+    TBranch        *b_trk_cov_theta_qoverp;   //!
+    TBranch        *b_trk_IPEstimate_d0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_IPEstimate_z0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_IPEstimate_err_d0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_IPEstimate_err_z0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_IPEstimate_errPV_d0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_IPEstimate_errPV_z0_unbiased_wrtPV;   //!
+    TBranch        *b_trk_d0_wrtPV;   //!
+    TBranch        *b_trk_z0_wrtPV;   //!
+    TBranch        *b_trk_phi_wrtPV;   //!
+    TBranch        *b_trk_cov_d0_wrtPV;   //!
+    TBranch        *b_trk_cov_z0_wrtPV;   //!
+    TBranch        *b_trk_cov_phi_wrtPV;   //!
+    TBranch        *b_trk_cov_theta_wrtPV;   //!
+    TBranch        *b_trk_cov_qoverp_wrtPV;   //!
+    TBranch        *b_trk_d0_wrtBS;   //!
+    TBranch        *b_trk_z0_wrtBS;   //!
+    TBranch        *b_trk_phi_wrtBS;   //!
+    TBranch        *b_trk_cov_d0_wrtBS;   //!
+    TBranch        *b_trk_cov_z0_wrtBS;   //!
+    TBranch        *b_trk_cov_phi_wrtBS;   //!
+    TBranch        *b_trk_cov_theta_wrtBS;   //!
+    TBranch        *b_trk_cov_qoverp_wrtBS;   //!
+    TBranch        *b_trk_chi2;   //!
+    TBranch        *b_trk_ndof;   //!
+    TBranch        *b_trk_nBLHits;   //!
+    TBranch        *b_trk_nPixHits;   //!
+    TBranch        *b_trk_nSCTHits;   //!
+    TBranch        *b_trk_nTRTHits;   //!
+    TBranch        *b_trk_nTRTHighTHits;   //!
+    TBranch        *b_trk_nPixHoles;   //!
+    TBranch        *b_trk_nSCTHoles;   //!
+    TBranch        *b_trk_nTRTHoles;   //!
+    TBranch        *b_trk_nPixelDeadSensors;   //!
+    TBranch        *b_trk_nSCTDeadSensors;   //!
+    TBranch        *b_trk_nBLSharedHits;   //!
+    TBranch        *b_trk_nPixSharedHits;   //!
+    TBranch        *b_trk_nSCTSharedHits;   //!
+    TBranch        *b_trk_nBLayerSplitHits;   //!
+    TBranch        *b_trk_nPixSplitHits;   //!
+    TBranch        *b_trk_expectBLayerHit;   //!
+    TBranch        *b_trk_nHits;   //!
+    TBranch        *b_trk_hitPattern;   //!
+    TBranch        *b_trk_TRTHighTHitsRatio;   //!
+    TBranch        *b_trk_TRTHighTOutliersRatio;   //!
+    TBranch        *b_trk_fitter;   //!
+    TBranch        *b_trk_patternReco1;   //!
+    TBranch        *b_trk_patternReco2;   //!
+    TBranch        *b_trk_trackProperties;   //!
+    TBranch        *b_trk_particleHypothesis;   //!
+    TBranch        *b_trk_vx_weight;   //!
+    TBranch        *b_beamSpot_x;   //!
+    TBranch        *b_beamSpot_y;   //!
+    TBranch        *b_beamSpot_z;   //!
+    TBranch        *b_beamSpot_sigma_x;   //!
+    TBranch        *b_beamSpot_sigma_y;   //!
+    TBranch        *b_beamSpot_sigma_z;   //!
+    TBranch        *b_beamSpot_tilt_x;   //!
+    TBranch        *b_beamSpot_tilt_y;   //!
+    TBranch        *b_vxbc_n;   //!
+    TBranch        *b_vxbc_x;   //!
+    TBranch        *b_vxbc_y;   //!
+    TBranch        *b_vxbc_z;   //!
+    TBranch        *b_vxbc_cov_x;   //!
+    TBranch        *b_vxbc_cov_y;   //!
+    TBranch        *b_vxbc_cov_z;   //!
+    TBranch        *b_vxbc_cov_xy;   //!
+    TBranch        *b_vxbc_cov_xz;   //!
+    TBranch        *b_vxbc_cov_yz;   //!
+    TBranch        *b_vxbc_type;   //!
+    TBranch        *b_vxbc_chi2;   //!
+    TBranch        *b_vxbc_ndof;   //!
+    TBranch        *b_vxbc_px;   //!
+    TBranch        *b_vxbc_py;   //!
+    TBranch        *b_vxbc_pz;   //!
+    TBranch        *b_vxbc_E;   //!
+    TBranch        *b_vxbc_m;   //!
+    TBranch        *b_vxbc_nTracks;   //!
+    TBranch        *b_vxbc_sumPt;   //!
+    TBranch        *b_vxbc_trk_weight;   //!
+    TBranch        *b_vxbc_trk_n;   //!
+    TBranch        *b_vxbc_trk_index;   //!
+    TBranch        *b_METRefFinal_etx;   //!
+    TBranch        *b_METRefFinal_ety;   //!
+    TBranch        *b_METRefFinal_phi;   //!
+    TBranch        *b_METRefFinal_et;   //!
+    TBranch        *b_METRefFinal_sumet;   //!
+    TBranch        *b_muid_n;   //!
+    TBranch        *b_muid_E;   //!
+    TBranch        *b_muid_pt;   //!
+    TBranch        *b_muid_m;   //!
+    TBranch        *b_muid_eta;   //!
+    TBranch        *b_muid_phi;   //!
+    TBranch        *b_muid_px;   //!
+    TBranch        *b_muid_py;   //!
+    TBranch        *b_muid_pz;   //!
+    TBranch        *b_muid_charge;   //!
+    TBranch        *b_muid_allauthor;   //!
+    TBranch        *b_muid_hastrack;   //!
+    TBranch        *b_el_n;   //!
+    TBranch        *b_el_E;   //!
+    TBranch        *b_el_Et;   //!
+    TBranch        *b_el_pt;   //!
+    TBranch        *b_el_m;   //!
+    TBranch        *b_el_eta;   //!
+    TBranch        *b_el_phi;   //!
+    TBranch        *b_el_px;   //!
+    TBranch        *b_el_py;   //!
+    TBranch        *b_el_pz;   //!
+    TBranch        *b_el_charge;   //!
+    TBranch        *b_el_author;   //!
+    TBranch        *b_el_isEM;   //!
+    TBranch        *b_el_isEMLoose;   //!
+    TBranch        *b_el_isEMMedium;   //!
+    TBranch        *b_el_isEMTight;   //!
+    TBranch        *b_el_OQ;   //!
+    TBranch        *b_el_convFlag;   //!
+    TBranch        *b_el_isConv;   //!
+    TBranch        *b_el_nConv;   //!
+    TBranch        *b_el_nSingleTrackConv;   //!
+    TBranch        *b_el_nDoubleTrackConv;   //!
+    TBranch        *b_el_mediumWithoutTrack;   //!
+    TBranch        *b_el_mediumIsoWithoutTrack;   //!
+    TBranch        *b_el_tightWithoutTrack;   //!
+    TBranch        *b_el_tightIsoWithoutTrack;   //!
+    TBranch        *b_el_loose;   //!
+    TBranch        *b_el_looseIso;   //!
+    TBranch        *b_el_medium;   //!
+    TBranch        *b_el_mediumIso;   //!
+    TBranch        *b_el_tight;   //!
+    TBranch        *b_el_tightIso;   //!
+    TBranch        *b_el_loosePP;   //!
+    TBranch        *b_el_loosePPIso;   //!
+    TBranch        *b_el_mediumPP;   //!
+    TBranch        *b_el_mediumPPIso;   //!
+    TBranch        *b_el_tightPP;   //!
+    TBranch        *b_el_tightPPIso;   //!
+    TBranch        *b_el_goodOQ;   //!
+    TBranch        *b_el_refittedTrack_n;   //!
+    TBranch        *b_el_vertweight;   //!
+    TBranch        *b_el_hastrack;   //!
+    TBranch        *b_jet_n;   //!
+    TBranch        *b_jet_E;   //!
+    TBranch        *b_jet_pt;   //!
+    TBranch        *b_jet_m;   //!
+    TBranch        *b_jet_eta;   //!
+    TBranch        *b_jet_phi;   //!
+    TBranch        *b_jet_emfrac;   //!
+    TBranch        *b_jet_jvtx_x;   //!
+    TBranch        *b_jet_jvtx_y;   //!
+    TBranch        *b_jet_jvtx_z;   //!
+    TBranch        *b_jet_jvtxf;   //!
+    TBranch        *b_jet_flavor_weight_Comb;   //!
+    TBranch        *b_jet_flavor_weight_MV1;   //!
+    TBranch        *b_jet_flavor_weight_JetFitterCOMBNN;   //!
+    TBranch        *b_jet_el_dr;   //!
+    TBranch        *b_jet_el_matched;   //!
+    TBranch        *b_jet_mu_dr;   //!
+    TBranch        *b_jet_mu_matched;   //!
+    TBranch        *b_jet_L1_dr;   //!
+    TBranch        *b_jet_L1_matched;   //!
+    TBranch        *b_jet_L2_dr;   //!
+    TBranch        *b_jet_L2_matched;   //!
+    TBranch        *b_jet_EF_dr;   //!
+    TBranch        *b_jet_EF_matched;   //!
+
+    VtxTree(TTree * /*tree*/ =0) : fChain(0) { }
+    virtual ~VtxTree() { }
+    virtual Int_t   Version() const {
+      return 2;
+    }
+    virtual void    Begin(TTree *tree);
+    virtual void    SlaveBegin(TTree *tree);
+    virtual void    Init(TTree *tree);
+    virtual Bool_t  Notify();
+    virtual Bool_t  Process(Long64_t entry);
+    virtual Int_t   GetEntry(Long64_t entry, Int_t getall = 0) {
+      return fChain ? fChain->GetTree()->GetEntry(entry, getall) : 0;
+    }
+    virtual void    SetOption(const char *option) {
+      fOption = option;
+    }
+    virtual void    SetObject(TObject *obj) {
+      fObject = obj;
+    }
+    virtual void    SetInputList(TList *input) {
+      fInput = input;
+    }
+    virtual TList  *GetOutputList() const {
+      return fOutput;
+    }
+    virtual void    SlaveTerminate();
+    virtual void    Terminate();
+
+    ClassDef(VtxTree,0);
+};
+
+#endif

@@ -1,0 +1,46 @@
+10
+
+dir
+311189
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst/Institutes/LBNL/Luminosity/VdM/trunk
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasinst
+
+
+
+2013-01-15T17:39:43.529771Z
+310898
+jiturbep
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+28d52da6-859c-4cdc-abcc-1ec3d2c02001
+
+Root
+dir
+
+cmt
+dir
+
+VdM
+dir
+
+scripts
+dir
+
+data
+dir
+
+util
+dir
+

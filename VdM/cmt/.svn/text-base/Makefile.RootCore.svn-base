@@ -1,0 +1,32 @@
+# this makefile also gets parsed by shell scripts
+# therefore it does not support full make syntax and features
+# edit with care
+
+#In order to enable/disable the useage of the Vertex-Unfolding method:
+# * Add/Remove 
+#    -DUSE_UNFOLD  -I$(ROOUNFOLDDIR)/src
+#   to PACKAGE_CXXFLAGS
+# * Add/Remove 
+#    VtxLumiUnfold 
+#   to PACKAGE_DEP  
+# * please re-run 
+#    RootCore/scripts/find_packages.sh
+# * then issue a 
+#    RootCore/scripts/compile.sh clean 
+#   followed by 
+#    RootCore/scripts/compile.sh
+
+PACKAGE          = VdM
+PACKAGE_PRELOAD  = Hist Tree Core Graf
+PACKAGE_CXXFLAGS = -g
+PACKAGE_OBJFLAGS = 
+PACKAGE_LDFLAGS  = 
+PACKAGE_BINFLAGS = 
+PACKAGE_DEP      = atlasstyle PileupCorrections GlobalSettings
+PACKAGE_TRYDEP   = 
+PACKAGE_CLEAN    = 
+PACKAGE_NOOPT    = 1
+PACKAGE_NOCC     = 0
+
+include $(ROOTCOREDIR)/Makefile-common
+   

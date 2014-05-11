@@ -1,0 +1,847 @@
+#!/usr/bin/env python
+
+# NOTE: the scripts current expects to live in a directory with folder <run>/<settings>, and luminosity TTree stored at <run>/<settings>/lumi_r<run>.root.
+
+__author__  = 'David Yu'
+__version__ = '$Id: plots.py $'
+__usage__   = """%prog [options] [cmd ...]
+
+"""
+
+import os, sys
+import ROOT
+from ROOT import *
+from array import array
+
+gROOT.Reset()
+#gROOT.LoadMacro("AtlasStyle.C")
+#gROOT.LoadMacro("AtlasUtils.C")
+#SetAtlasStyle()
+gStyle.SetOptTitle(0);
+
+def roundfloat_to_string(str_in):
+	return str(round(float(str_in),3))
+
+def float_to_string(float_in):
+	return str(round(float_in,3))
+	
+def divide_tgraphs(tg1, tg2):
+	print "Called divide_tgraphs with TGraphs " + tg1.GetName() + " and " + tg2.GetName()
+	if tg1.GetN() != tg2.GetN():
+		print "Error: tried to divide TGraphs with different number of entries!"
+		return 0
+	else:
+			
+		tg_out = TGraphAsymmErrors(tg1.GetN())
+		tg_out.SetName("tg_tmp")
+		
+		for i in range(tg1.GetN()):
+			if tg2.GetY()[i] != 0:
+				value = float(tg1.GetY()[i]) / float(tg2.GetY()[i])
+				errhigh = 0
+				errlow = 0
+				if tg1.GetY()[i] != 0:
+					errhigh = value * sqrt((tg1.GetErrorYhigh(i) / tg1.GetY()[i])**2 + (tg2.GetErrorYhigh(i) / tg2.GetY()[i])**2)
+					errlow = value * sqrt((tg1.GetErrorYlow(i) / tg1.GetY()[i])**2 + (tg2.GetErrorYlow(i) / tg2.GetY()[i])**2)
+					
+			
+				tg_out.SetPoint(i, tg1.GetX()[i], value)
+				tg_out.SetPointError(i, tg1.GetErrorXlow(i), tg1.GetErrorXhigh(i), errlow, errhigh)
+		return tg_out
+
+gROOT.SetBatch(True)
+
+def comparison_plots(p_run, p_settings, p_default_algorithm):
+	print "Making comparison plots for run " + p_run + " / " + p_settings
+
+	rootfile = p_run + "/" + p_settings + "/lumi_r" + p_run + ".root"
+
+	# -- Default algorithm setup
+	default_leaf = ""
+	sigma_vis_default = 0
+	if p_default_algorithm == "bcmvor":
+		default_leaf = "Linst_bcmvor"
+		sigma_vis_default = 4.771
+	elif p_default_algorithm == "bcmhor":
+		default_leaf = "Linst_bcmhor"
+		sigma_vis_default = 4.757
+	elif p_default_algorithm == "lucidor":
+		default_leaf = "Linst_lucidor"
+		sigma_vis_default = 42.68
+	else:
+		print "ERROR: Specified default algorithm " + p_default_algorithm + " not recognized. Abandoning..."
+		return 1
+
+	# -- Run-by-run setup
+	restrict_plbs = False
+	if p_run == "182013":
+		restrict_plbs = True
+
+		# -- Get pLB list from timestamp files
+		timestamp_files = ["../timestamps/182013/scan/x1_timestamps.dat", "../timestamps/182013/scan/y1_timestamps.dat", "../timestamps/182013/scan/x2_timestamps.dat", "../timestamps/182013/scan/y2_timestamps.dat", "../timestamps/182013/scan/x3_timestamps.dat", "../timestamps/182013/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		# -- BCIDs
+		bcids = [81, 867, 2752]
+	elif p_run == "188951":
+		restrict_plbs = True
+		plb_list = xrange(5, 41, 2)
+		bcids = [200, 999]
+	elif p_run == "191373":
+		restrict_plbs = True
+		plb_list = xrange(30, 250)
+		bcids = [1]
+	elif p_run == "200805":
+		restrict_plbs = False
+		plb_list = [1]
+		bcids = [1]
+	elif p_run == "201351":
+		restrict_plbs = True
+		timestamp_files = ["../timestamps/201351/scan/x1_timestamps.dat", "../timestamps/201351/scan/y1_timestamps.dat", "../timestamps/201351/scan/x2_timestamps.dat", "../timestamps/201351/scan/y2_timestamps.dat", "../timestamps/201351/scan/x3_timestamps.dat", "../timestamps/201351/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		bcids = [1, 241, 2881, 3121]
+	else:
+		restrict_plbs = False
+		bcids = [0]
+
+
+
+	# -- List of samples and plotting styles
+	algList = ["NVtx", "NEvt"]
+	nTrkCuts = [5, 7, 10, 2]
+	colors = [kBlack, kRed-3, kGreen+3, kBlue-3, kYellow-3, kCyan, kMagenta+1] # Colors for different NTrk cuts
+	markers = [20, 21, 22, 23, 24, 25, 26, 27, 33] # Markers for different BCIDs
+	
+	# -- Set up TGraphs
+	tg_ratio_vs_bcm = {}
+	tg_ratio_vs_plb = {}
+	
+	for nTrkCut in nTrkCuts:
+		tg_ratio_vs_bcm[nTrkCut] = {}
+		tg_ratio_vs_plb[nTrkCut] = {}
+		for bcid in bcids:
+			tg_ratio_vs_bcm[nTrkCut][bcid] = {}
+			tg_ratio_vs_plb[nTrkCut][bcid] = {}
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(nTrkCut) + "_BCID" + str(bcid) + ".root"
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+			n_entries = t.GetEntriesFast()
+
+			for alg in algList:
+				
+				if alg == "NVtx" and nTrkCut == 2:
+					continue
+
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_plb[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+			
+				tag = "BCID" + str(bcid) + "_" + alg + str(nTrkCut)
+				
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetName("ratio_vs_bcm_" + tag)
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetTitle("ratio_vs_bcm_" + tag)
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetXaxis().SetTitle("L_{BCMV_OR}")
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx, " + alg + "} / L_{BCMV_OR}")
+				
+				tg_ratio_vs_plb[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].SetName("ratio_vs_plb_" + tag)
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].GetXaxis().SetTitle("pLB")
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx, " + alg + "} / L_{BCMV_OR}")
+
+			f_lumivtx.Close()
+	
+	# -- Process trees
+	for nTrkCut in nTrkCuts:
+		for bcid in bcids:
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(nTrkCut) + "_BCID" + str(bcid) + ".root"
+
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+		
+			n_entries = t.GetEntriesFast()
+
+			t.SetBranchStatus("*", 1)
+			for i in range(n_entries):
+				t.GetEntry(i)
+				plb = t.GetLeaf("LB").GetValue(0)
+
+				if restrict_plbs == True:
+					good_plb = 0
+					for c_plb in plb_list:
+						if c_plb == plb:
+							good_plb = 1
+					if good_plb == 0:
+						continue
+
+				bcid = t.GetLeaf("BCID").GetValue(0)
+				duration = t.GetLeaf("Duration").GetValue(0);
+				
+				lumi_default = t.GetLeaf(default_leaf).GetValue(0)
+				lumi_default_err = sqrt(lumi_default * duration * sigma_vis_default * 11245.5) / duration / 11245.5 / sigma_vis_default
+
+				for alg in algList:
+					if alg == "NVtx" and nTrkCut == 2:
+						continue
+					tag = alg + str(nTrkCut)
+					lumi_vtx = t.GetLeaf("Linst_"+tag).GetValue(0)
+			
+					if alg == "NEvt" and nTrkCut == 2:
+						print "[debug] Linst_NEvt2(" + str(plb) + ") = " + str(lumi_vtx)
+
+					lumi_vtx_err_up = 0
+					lumi_vtx_err_down = 0
+					if alg == "NVtx":
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_err").GetValue(0)
+						lumi_vtx_err_down = lumi_vtx_err_up
+					else:
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_errup").GetValue(0)
+						lumi_vtx_err_down = t.GetLeaf("Linst_" + tag + "_errdown").GetValue(0)
+					
+					if lumi_default != 0 and lumi_vtx != 0:
+						tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetPoint(i, lumi_default * 71500. / 11245.5, lumi_vtx/lumi_default)
+						tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetPointError(i, 0, 0, lumi_vtx/lumi_default * ((lumi_vtx_err_down / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5,  lumi_vtx/lumi_default * ((lumi_vtx_err_up / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5);
+						
+						tg_ratio_vs_plb[nTrkCut][bcid][alg].SetPoint(i, plb, lumi_vtx/lumi_default)
+						tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetPointError(i, 0, 0, lumi_vtx/lumi_default * ((lumi_vtx_err_down / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5,  lumi_vtx/lumi_default * ((lumi_vtx_err_up / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5);
+					else:
+						tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetPoint(i, lumi_default  * 71500. / 11245.5, 0)
+						tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetPointError(i, 0, 0, 0, 0)
+						
+						tg_ratio_vs_plb[nTrkCut][bcid][alg].SetPoint(i, plb, 0)
+						tg_ratio_vs_plb[nTrkCut][bcid][alg].SetPointError(i, 0, 0, 0, 0)
+			f_lumivtx.Close()
+
+	# -- Drawing
+	c_ratio_vs_bcm = {}
+	l_ratio_vs_bcm = {}
+	c_ratio_vs_plb = {}
+	l_ratio_vs_plb = {}
+	
+	for alg in algList:
+		c_ratio_vs_bcm[alg] = TCanvas("c_ratio_vs_bcm_" + alg, "c_ratio_vs_bcm_" + alg, 1250, 800)
+		c_ratio_vs_bcm[alg].SetRightMargin(0.24)
+		c_ratio_vs_bcm[alg].SetTopMargin(0.15)
+		l_ratio_vs_bcm[alg] = TLegend(0.77, 0.2, 1.0, 0.8)
+		l_ratio_vs_bcm[alg].SetFillColor(0)
+		l_ratio_vs_bcm[alg].SetBorderSize(1)
+		
+		c_ratio_vs_plb[alg] = TCanvas("c_ratio_vs_plb_" + alg, "c_ratio_vs_plb_" + alg, 1200, 800)
+		c_ratio_vs_plb[alg].SetRightMargin(0.2)
+		l_ratio_vs_plb[alg] = TLegend(0.81, 0.2, 1.0, 0.8)
+		l_ratio_vs_plb[alg].SetFillColor(0)
+		l_ratio_vs_plb[alg].SetBorderSize(1)
+	
+	
+		drawFirst = 1
+		xmax = 0
+		uxmin = 0
+		uxmax = 0
+		uymin = 0
+		uymax = 0
+		for bcid in bcids:
+			for nTrkCut in nTrkCuts:
+				if alg == "NVtx" and nTrkCut == 2:
+					continue
+				if drawFirst == 1:
+					draw_options = "ap"
+					drawFirst = 0
+				else:
+					draw_options = "p"
+				
+				legend_entry = "BCID " + str(bcid) + " / NTrk >= " + str(nTrkCut)
+				c_ratio_vs_bcm[alg].cd()
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetMarkerStyle(markers[bcids.index(bcid)])
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetMarkerColor(colors[nTrkCuts.index(nTrkCut)])
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetMinimum(0.95)
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].SetMaximum(1.05)
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetXaxis().SetTitle("#mu_{bcmvor}")
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx}/L_{bcmvor}")
+				tg_ratio_vs_bcm[nTrkCut][bcid][alg].Draw(draw_options)
+				l_ratio_vs_bcm[alg].AddEntry(tg_ratio_vs_bcm[nTrkCut][bcid][alg], legend_entry, "p")
+				
+				c_ratio_vs_plb[alg].cd()
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].SetMarkerStyle(markers[bcids.index(bcid)])
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].SetMarkerColor(colors[nTrkCuts.index(nTrkCut)])
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].SetMinimum(0.9)
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].SetMaximum(1.1)
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].GetXaxis().SetTitle("L")
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx}/L_{bcm}")
+				tg_ratio_vs_plb[nTrkCut][bcid][alg].Draw(draw_options)
+				if draw_options == "ap":
+					xmax = tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetHistogram().GetXaxis().GetXmax() * 11245.5 / 71500.
+					#uxmin = gPad.GetUxmin()
+					#uxmax = gPad.GetUxmax()
+					#uymin = gPad.GetUymin()
+					#uymax = gPad.GetUymax()
+					uxmin = tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetHistogram().GetXaxis().GetXmin()
+					uxmax = tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetHistogram().GetXaxis().GetXmax()
+					#uymin = tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetHistogram().GetYaxis().GetXmin()
+					#uymax = tg_ratio_vs_bcm[nTrkCut][bcid][alg].GetHistogram().GetYaxis().GetXmax()
+					uymin = 0.95
+					uymax = 1.05
+				l_ratio_vs_plb[alg].AddEntry(tg_ratio_vs_plb[nTrkCut][bcid][alg], legend_entry, "p")
+
+		c_ratio_vs_bcm[alg].cd()
+		l_ratio_vs_bcm[alg].Draw()
+		print str(uxmin) + ", " + str(uxmax) + " / " + str(uymin) + ", " + str(uymax)
+		topaxis = TGaxis(uxmin, uymax, uxmax, uymax, 0,xmax,510,"-L")
+		topaxis.SetLineColor(kBlack)
+		topaxis.SetTextColor(kBlack)
+		topaxis.SetLabelFont(42)
+		topaxis.SetTitleFont(42)
+		topaxis.SetLabelSize(0.05)
+		topaxis.SetTitleSize(0.05)
+		topaxis.SetTitle("L_{bcmvor} (#mub^{-1}s^{-1})")
+		SetAtlasStyle()
+		gStyle.SetOptTitle(0);
+		gStyle.SetPadTickX(0);
+		gStyle.SetPadTickY(1);
+		topaxis.Draw()
+		c_ratio_vs_bcm[alg].SaveAs(p_run + "/" + p_settings + "/c_ratio_vs_bcm_" + alg + ".pdf")
+		
+		c_ratio_vs_plb[alg].cd()
+		l_ratio_vs_plb[alg].Draw()
+		c_ratio_vs_plb[alg].SaveAs(p_run + "/" + p_settings + "c_ratio_vs_plb_" + alg + ".pdf")
+		
+
+def pileup_correction_plots(p_run, p_settings, p_default_algorithm):
+	print "Making plots for pileup corrections"
+	
+	rootfile = p_run + "/" + p_settings + "/lumi_r" + p_run + ".root"
+
+	# -- Default algorithm setup
+	default_leaf = ""
+	sigma_vis_default = 0
+	if p_default_algorithm == "bcmvor":
+		default_leaf = "Linst_bcmvor"
+		sigma_vis_default = 4.771
+	elif p_default_algorithm == "bcmhor":
+		default_leaf = "Linst_bcmhor"
+		sigma_vis_default = 4.757
+	elif p_default_algorithm == "lucidor":
+		default_leaf = "Linst_lucidor"
+		sigma_vis_default = 42.68
+	else:
+		print "ERROR: Specified default algorithm " + p_default_algorithm + " not recognized. Abandoning..."
+		return 1
+
+	# -- Run-by-run setup
+	restrict_plbs = False
+	if p_run == "182013":
+		restrict_plbs = True
+
+		# -- Get pLB list from timestamp files
+		timestamp_files = ["../timestamps/182013/scan/x1_timestamps.dat", "../timestamps/182013/scan/y1_timestamps.dat", "../timestamps/182013/scan/x2_timestamps.dat", "../timestamps/182013/scan/y2_timestamps.dat", "../timestamps/182013/scan/x3_timestamps.dat", "../timestamps/182013/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		# -- BCIDs
+		bcids = [81, 867, 2752]
+	elif p_run == "188951":
+		restrict_plbs = True
+		plb_list = xrange(5, 41, 2)
+		bcids = [200, 999]
+	elif p_run == "191373":
+		restrict_plbs = True
+		plb_list = xrange(30, 250)
+		bcids = [1]
+	elif p_run == "200805":
+		restrict_plbs = False
+		plb_list = [1]
+		bcids = [1]
+	elif p_run == "201351":
+		restrict_plbs = True
+		timestamp_files = ["../timestamps/201351/scan/x1_timestamps.dat", "../timestamps/201351/scan/y1_timestamps.dat", "../timestamps/201351/scan/x2_timestamps.dat", "../timestamps/201351/scan/y2_timestamps.dat", "../timestamps/201351/scan/x3_timestamps.dat", "../timestamps/201351/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		bcids = [1, 241, 2881, 3121]
+	else:
+		restrict_plbs = False
+		bcids = [0]
+
+
+
+	# -- List of samples and plotting styles
+	algList = ["NVtx", "NEvt"]
+	nTrkCuts = [5, 7, 10, 2]
+	colors = [kBlack, kRed-3, kGreen+3, kBlue-3, kYellow-3, kCyan, kMagenta+1] # Colors for different NTrk cuts
+	markers = [20, 21, 22, 23, 24, 25, 26, 27, 33] # Markers for different BCIDs
+	
+	# -- Set up TGraphs
+	tg_ratio_vs_bcm_raw = {}
+	tg_ratio_vs_bcm_fakesubtracted = {}
+	tg_ratio_vs_bcm_final = {}
+
+	for nTrkCut in nTrkCuts:
+		tg_ratio_vs_bcm_raw[nTrkCut] = {}
+		tg_ratio_vs_bcm_fakesubtracted[nTrkCut] = {}
+		tg_ratio_vs_bcm_final[nTrkCut] = {}
+
+		for bcid in bcids:
+			tg_ratio_vs_bcm_raw[nTrkCut][bcid] = {}
+			tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid] = {}
+			tg_ratio_vs_bcm_final[nTrkCut][bcid] = {}
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(nTrkCut) + "_BCID" + str(bcid) + ".root"
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+			n_entries = t.GetEntriesFast()
+
+			for alg in algList:
+
+				if alg == "NVtx" and nTrkCut == 2:
+					continue
+	
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+			
+				tag = "BCID" + str(bcid) + "_" + alg + str(nTrkCut)
+				
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetName("ratio_vs_bcm_raw_" + tag)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetTitle("ratio_vs_bcm_raw_" + tag)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].GetXaxis().SetTitle("L_{BCMV_OR}")
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx, " + alg + "} / L_{BCMV_OR}")
+				
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetName("ratio_vs_bcm_fakesubtracted_" + tag)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetTitle("ratio_vs_bcm_fakesubtracted_" + tag)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].GetXaxis().SetTitle("L_{BCMV_OR}")
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx, " + alg + "} / L_{BCMV_OR}")
+				
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg] = TGraphAsymmErrors(n_entries)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetName("ratio_vs_bcm_final_" + tag)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetTitle("ratio_vs_bcm_final_" + tag)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].GetXaxis().SetTitle("L_{BCMV_OR}")
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{vtx, " + alg + "} / L_{BCMV_OR}")
+				
+			f_lumivtx.Close()
+
+	# -- Process trees
+	for nTrkCut in nTrkCuts:
+		for bcid in bcids:
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(nTrkCut) + "_BCID" + str(bcid) + ".root"
+
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+		
+			n_entries = t.GetEntriesFast()
+
+			t.SetBranchStatus("*", 1)
+			for i in range(n_entries):
+				t.GetEntry(i)
+				plb = t.GetLeaf("LB").GetValue(0)
+
+				if restrict_plbs == True:
+					good_plb = 0
+					for c_plb in plb_list:
+						if c_plb == plb:
+							good_plb = 1
+					if good_plb == 0:
+						continue
+
+				bcid = t.GetLeaf("BCID").GetValue(0)
+				duration = t.GetLeaf("Duration").GetValue(0);
+				
+				lumi_default = t.GetLeaf(default_leaf).GetValue(0)
+				lumi_default_err = sqrt(lumi_default * duration * sigma_vis_default * 11245.5) / duration / 11245.5 / sigma_vis_default
+
+				for alg in algList:
+
+					if alg == "NVtx" and nTrkCut == 2:
+						continue
+
+					tag = alg + str(nTrkCut)
+					lumi_vtx = t.GetLeaf("Linst_"+tag).GetValue(0)
+			
+					lumi_vtx_err_up = 0
+					lumi_vtx_err_down = 0
+					if alg == "NVtx":
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_err").GetValue(0)
+						lumi_vtx_err_down = lumi_vtx_err_up
+					else:
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_errup").GetValue(0)
+						lumi_vtx_err_down = t.GetLeaf("Linst_" + tag + "_errdown").GetValue(0)
+					
+					masking_correction_factor = 1.
+					if alg == "NVtx":
+						masking_correction_factor = t.GetLeaf("MaskingCorrection_" + tag).GetValue(0)
+					fake_mu = t.GetLeaf("FakeMu_" + tag).GetValue(0)
+					sigma_vis = t.GetLeaf("SigmaVis_" + tag).GetValue(0)
+					fake_lumi = fake_mu * 11245.5 / sigma_vis
+
+					if lumi_default != 0 and lumi_vtx != 0:
+						tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetPoint(i, lumi_default * 71500. / 11245.5, ((lumi_vtx / masking_correction_factor ) + fake_lumi) / lumi_default)
+						tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetPointError(i, 0., 0., ((lumi_vtx / masking_correction_factor ) + fake_lumi) / lumi_default * sqrt((lumi_vtx_err_down / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2), ((lumi_vtx / masking_correction_factor ) + fake_lumi) / lumi_default * sqrt((lumi_vtx_err_up / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2))
+
+						tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetPoint(i, lumi_default * 71500. / 11245.5, lumi_vtx / masking_correction_factor / lumi_default)
+						tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetPointError(i, 0., 0., lumi_vtx / masking_correction_factor / lumi_default * sqrt((lumi_vtx_err_down / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2), lumi_vtx / masking_correction_factor / lumi_default * sqrt((lumi_vtx_err_up / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2))
+
+						tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetPoint(i, lumi_default * 71500. / 11245.5, lumi_vtx/lumi_default)
+						tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetPointError(i, 0, 0, lumi_vtx/lumi_default * ((lumi_vtx_err_down / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5,  lumi_vtx/lumi_default * ((lumi_vtx_err_up / lumi_vtx)**2 + (lumi_default_err / lumi_default)**2)**0.5);
+						
+					else:
+						tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetPoint(i, lumi_default  * 71500. / 11245.5, 0)
+						tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetPointError(i, 0, 0, 0, 0)
+
+						tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetPoint(i, lumi_default  * 71500. / 11245.5, 0)
+						tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetPointError(i, 0, 0, 0, 0)
+
+						tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetPoint(i, lumi_default  * 71500. / 11245.5, 0)
+						tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetPointError(i, 0, 0, 0, 0)
+						
+			f_lumivtx.Close()
+
+
+	#Drawing
+	c_corrections = {} # -- One for each BCID and NVtx/NEvt, but keep NTrk cuts on the same plot. 
+	l_corrections = {}
+	for alg in algList:
+		c_corrections[alg] = {}
+		l_corrections[alg] = {}
+
+		for bcid in bcids:
+			tag = "_" + alg + "_BCID" + str(bcid)
+			cname = "c_pileup_corrections" + tag
+			c_corrections[alg][bcid] = TCanvas(cname, cname, 1200, 800)
+			c_corrections[alg][bcid].SetRightMargin(0.2)
+			l_corrections[alg][bcid] = TLegend(0.81, 0.2, 0.99, 0.8)
+			l_corrections[alg][bcid].SetFillColor(0)
+			l_corrections[alg][bcid].SetBorderSize(1)
+			draw_first = 1
+
+			for nTrkCut in nTrkCuts:
+
+				if alg == "NVtx" and nTrkCut == 2:
+					continue
+
+				draw_options = "p"
+				if draw_first == 1:
+					draw_first = 0
+					draw_options = "ap"
+
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetMarkerStyle(24)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetMarkerColor(colors[nTrkCuts.index(nTrkCut)])
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetMarkerSize(0.5)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetMinimum(0.85)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].SetMaximum(1.05)
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].GetXaxis().SetTitle("#mu_{bcmvor}")
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].GetYaxis().SetTitle("L_{alg} / L_{bcmvor}")
+				tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg].Draw(draw_options)
+
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetMarkerStyle(25)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetMarkerColor(colors[nTrkCuts.index(nTrkCut)])
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].SetMarkerSize(0.5)
+				tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg].Draw("p")
+
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetMarkerStyle(20)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetMarkerColor(colors[nTrkCuts.index(nTrkCut)])
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].SetMarkerSize(1.1)
+				tg_ratio_vs_bcm_final[nTrkCut][bcid][alg].Draw("p")
+
+				l_corrections[alg][bcid].AddEntry(tg_ratio_vs_bcm_raw[nTrkCut][bcid][alg], "Raw / NTrk " + str(nTrkCut), "p")
+				l_corrections[alg][bcid].AddEntry(tg_ratio_vs_bcm_fakesubtracted[nTrkCut][bcid][alg], "CorrFake / NTrk " + str(nTrkCut), "p")
+				l_corrections[alg][bcid].AddEntry(tg_ratio_vs_bcm_final[nTrkCut][bcid][alg], "CorrFakeMask / NTrk " + str(nTrkCut), "p")
+			l_corrections[alg][bcid].Draw()
+			c_corrections[alg][bcid].SaveAs(p_run + "/" + p_settings + "/" + c_corrections[alg][bcid].GetName() + ".pdf")
+	
+def luminosity_vs_lb(p_run, p_settings, p_default_algorithm):
+	print "Making plots of luminosity vs. lumiblock"
+	
+	rootfile = p_run + "/" + p_settings + "/lumi_r" + p_run + ".root"
+
+	# -- Default algorithm setup
+	default_leaf = ""
+	sigma_vis_default = 0
+	if p_default_algorithm == "bcmvor":
+		default_leaf = "Linst_bcmvor"
+		sigma_vis_default = 4.771
+	elif p_default_algorithm == "bcmhor":
+		default_leaf = "Linst_bcmhor"
+		sigma_vis_default = 4.757
+	elif p_default_algorithm == "lucidor":
+		default_leaf = "Linst_lucidor"
+		sigma_vis_default = 42.68
+	else:
+		print "ERROR: Specified default algorithm " + p_default_algorithm + " not recognized. Abandoning..."
+		return 1
+
+	# -- Run-by-run setup
+	restrict_plbs = False
+	if p_run == "182013":
+		restrict_plbs = True
+
+		# -- Get pLB list from timestamp files
+		timestamp_files = ["../timestamps/182013/scan/x1_timestamps.dat", "../timestamps/182013/scan/y1_timestamps.dat", "../timestamps/182013/scan/x2_timestamps.dat", "../timestamps/182013/scan/y2_timestamps.dat", "../timestamps/182013/scan/x3_timestamps.dat", "../timestamps/182013/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		# -- BCIDs
+		bcids = [81, 867, 2752]
+	elif p_run == "188951":
+		restrict_plbs = True
+		plb_list = xrange(5, 41, 2)
+		bcids = [200, 999]
+	elif p_run == "191373":
+		restrict_plbs = True
+		plb_list = xrange(30, 250)
+		bcids = [1]
+	elif p_run == "200805":
+		restrict_plbs = False
+		plb_list = [1]
+		bcids = [1]
+	elif p_run == "201351":
+		restrict_plbs = True
+		timestamp_files = ["../timestamps/201351/scan/x1_timestamps.dat", "../timestamps/201351/scan/y1_timestamps.dat", "../timestamps/201351/scan/x2_timestamps.dat", "../timestamps/201351/scan/y2_timestamps.dat", "../timestamps/201351/scan/x3_timestamps.dat", "../timestamps/201351/scan/y3_timestamps.dat"]
+		plb_list = []
+		for filename in timestamp_files:
+			timestamp_file = open(filename, 'r')
+
+			first_line = 1
+			first_plb = -1
+			for line in timestamp_file:
+				c_plb, c_ts1, c_ts2 = line.split('\t')
+
+				if first_line == 1:
+					first_line = 0
+					first_plb = int(c_plb)
+					print "Found first pLB = " + str(first_plb)
+					plb_list.append(int(c_plb))
+				else:
+					if (int(c_plb) - first_plb) % 2 == 0:
+						plb_list.append(int(c_plb))
+		print "Found " + str(len(plb_list)) + " pLBs"
+
+		bcids = [1, 241, 2881, 3121]
+	else:
+		restrict_plbs = False
+		bcids = [0]
+
+
+
+	# -- List of samples and plotting styles
+	algList = ["NVtx"]
+	nTrkCuts = [5, 7, 10]
+	colors = [kBlack, kRed-3, kGreen+3, kBlue-3, kYellow-3, kCyan, kMagenta+1] # Colors for different NTrk cuts
+	markers = [20, 21, 22, 23, 24, 25, 26, 27, 33] # Markers for different BCIDs
+	
+	#Setup TGraphs: map is NTrkCut : BCID : NVtx/NEvt : TGraphErrors.
+	lumi_vs_lb = {}
+	lumi_vs_lb_counter = {} # Counter to keep track of which point to set while scanning the TTrees
+
+	for c_ntrkcut in nTrkCuts:
+		lumi_vs_lb[c_ntrkcut] = {}
+		lumi_vs_lb_counter[c_ntrkcut] = {}
+		for c_bcid in bcids:
+			lumi_vs_lb[c_ntrkcut][c_bcid] = {}
+			lumi_vs_lb_counter[c_ntrkcut][c_bcid] = {}
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(c_ntrkcut) + "_BCID" + str(c_bcid) + ".root"
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+			n_entries = t.GetEntriesFast()
+			tgraph_n = n_entries / len(bcids)
+
+			for c_alg in algList:
+				if c_alg == "NVtx" and c_ntrkcut == 2:
+					continue
+				lumi_vs_lb[c_ntrkcut][c_bcid][c_alg] = TGraphAsymmErrors(tgraph_n)
+				tgname = "lumi_vs_lb_NTrk" + c_alg + str(c_ntrkcut) + "_BCID" + str(c_bcid)
+				lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].SetName(tgname)
+				lumi_vs_lb_counter[c_ntrkcut][c_bcid][c_alg] = 0
+
+	#Process TTree
+	for c_ntrkcut in nTrkCuts:
+		for c_bcid in bcids:
+
+			if p_run == "182013":
+				rootfile = p_run + "/" + p_settings + "/lumi_r182013_NTrk" + str(c_ntrkcut) + "_BCID" + str(c_bcid) + ".root"
+
+			f_lumivtx = TFile(rootfile, "READ")
+			t = f_lumivtx.Get("LumiVtx")
+		
+			n_entries = t.GetEntriesFast()
+
+			t.SetBranchStatus("*", 1)
+			for i in range(n_entries):
+				t.GetEntry(i)
+				plb = t.GetLeaf("LB").GetValue(0)
+
+				if restrict_plbs == True:
+					good_plb = 0
+					for c_plb in plb_list:
+						if c_plb == plb:
+							good_plb = 1
+					if good_plb == 0:
+						continue
+
+				c_bcid = t.GetLeaf("BCID").GetValue(0)
+				duration = t.GetLeaf("Duration").GetValue(0);
+				
+				lumi_default = t.GetLeaf(default_leaf).GetValue(0)
+				lumi_default_err = sqrt(lumi_default * duration * sigma_vis_default * 11245.5) / duration / 11245.5 / sigma_vis_default
+
+				for c_alg in algList:
+
+					if c_alg == "NVtx" and c_ntrkcut == 2:
+						continue
+
+					tag = c_alg + str(c_ntrkcut)
+					lumi_vtx = t.GetLeaf("Linst_" + tag).GetValue(0)
+			
+					lumi_vtx_err_up = 0
+					lumi_vtx_err_down = 0
+					if c_alg == "NVtx":
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_err").GetValue(0)
+						lumi_vtx_err_down = lumi_vtx_err_up
+					else:
+						lumi_vtx_err_up = t.GetLeaf("Linst_" + tag + "_errup").GetValue(0)
+						lumi_vtx_err_down = t.GetLeaf("Linst_" + tag + "_errdown").GetValue(0)
+
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].SetPoint(lumi_vs_lb_counter[c_ntrkcut][c_bcid][c_alg], plb, lumi_vtx)
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].SetPointError(lumi_vs_lb_counter[c_ntrkcut][c_bcid][c_alg], 0., 0., lumi_vtx_err_down, lumi_vtx_err_up);
+					lumi_vs_lb_counter[c_ntrkcut][c_bcid][c_alg] = lumi_vs_lb_counter[c_ntrkcut][c_bcid][c_alg] + 1
+	#Drawing
+	c_luminosity_vs_lb = TCanvas("c_luminosity_vs_lb", "c_luminosity_vs_lb", 1200, 800)
+	c_luminosity_vs_lb.SetRightMargin(0.2)
+	l_luminosity_vs_lb = TLegend(0.81, 0.2, 0.99, 0.8)
+	l_luminosity_vs_lb.SetFillColor(0)
+	l_luminosity_vs_lb.SetBorderSize(1)
+
+	draw_first = 1
+	for c_ntrkcut in nTrkCuts:
+		for c_bcid in bcids:
+				for c_alg in algList:
+					
+					if c_alg == "NVtx" and c_ntrkcut == 2:
+						continue
+					
+					draw_options = "p"
+					if draw_first == 1:
+						draw_options = "ap"
+						draw_first = 0
+
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].GetXaxis().SetTitle("pLB")
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].GetYaxis().SetTitle("L (#mub^{-1}s^{-1})")
+					marker_style = 20 + nTrkCuts.index(c_ntrkcut)
+					if c_bcid == 999:
+						marker_style = marker_style + 4
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].SetMarkerStyle(marker_style)
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].SetMarkerColor(colors[nTrkCuts.index(c_ntrkcut)])
+					lumi_vs_lb[c_ntrkcut][c_bcid][c_alg].Draw(draw_options)
+
+					legend_entry = c_alg + str(c_ntrkcut) + " / BCID " + str(c_bcid)
+					l_luminosity_vs_lb.AddEntry(lumi_vs_lb[c_ntrkcut][c_bcid][c_alg], legend_entry, "p")
+
+	l_luminosity_vs_lb.Draw()
+	c_luminosity_vs_lb.SaveAs(p_run + "/" + p_settings + "/" + c_luminosity_vs_lb.GetName() + ".pdf")
+
+
+
+if __name__ == "__main__":
+
+	from optparse import OptionParser
+	parser = OptionParser(usage=__usage__, version=__version__)
+	parser.add_option('-r', '--run', dest='run', type='string', default=None, help='run number')
+	parser.add_option('-s', '--settings', dest='settings', type='string', default=None, help='reco settings (17.2-normal | 17.2-VtxLumi)')
+	(options,args) = parser.parse_args()
+
+	filename = options.run + "/" + options.settings + "/lumi_r" + options.run + ".root"
+
+	#comparison_plots(options.run, options.settings, "bcmvor")
+	#pileup_correction_plots(options.run, options.settings, "bcmvor")
+	luminosity_vs_lb(options.run, options.settings, "bcmvor")
+

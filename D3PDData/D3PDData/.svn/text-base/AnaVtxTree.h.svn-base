@@ -1,0 +1,275 @@
+#ifndef AnaVtxTree_h
+#define AnaVtxTree_h
+
+//Special flag to include MC truth
+//#define PLOT_MC_TRUTH //--defined in Makefile
+#include "VtxTree.h"
+
+//Trigger Decision Tool
+#include "TrigRootAnalysis/TrigDecisionToolD3PD.h"
+
+//C++ includes
+#include <fstream>
+#include <map>
+#include <limits>
+#include <string>
+
+//ROOT includes
+#include "TH1F.h"
+#include "TF1.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "TString.h"
+#include "TChain.h"
+#include "TLegend.h"
+#include "TCanvas.h"
+#include "TRandom3.h"
+
+#include "D3PDData/GRLWrapper.h"
+
+class AnaVtxTree : public VtxTree {
+
+  protected:
+    // GRL reader tool
+    GRLWrapper m_GRLReader;
+
+    // Flag the first event
+    bool flag_first;
+
+    // Specify if pLBs are needed
+    bool use_plbs;
+
+    // Split vertex re-merging
+    Float_t split_maxdzsig;
+    
+    // Apply cut on chi2/ndf of reconstructed vertices
+    Float_t max_chi2ndf;
+
+    //Histograms
+    static const Int_t NBinsZAxis = 4000;
+    static const Float_t LowZAxis = -500.;
+    static const Float_t HighZAxis = 500.;
+    static const Int_t NBinsXAxis = 100;
+    static const Float_t LowXAxis = -3.;
+    static const Float_t HighXAxis = 3.;
+    static const Int_t NBinsYAxis = 100;
+    static const Float_t LowYAxis = -4.;
+    static const Float_t HighYAxis = 2.;
+
+    static const Float_t LowDzAxis = -500.;
+    static const Float_t HighDzAxis = 500.;
+    static const Float_t NBinsDzAxis = 4000;
+
+    static const Float_t LowPZAxis = -50000.;
+    static const Float_t HighPZAxis = 50000.;
+    static const Float_t LowPXAxis = -10000.;
+    static const Float_t HighPXAxis = 10000.;
+    static const Float_t LowPYAxis = -10000.;
+    static const Float_t HighPYAxis = 10000.;
+
+    /*********************************************************************/
+    //Tree for VdM analysis
+    /*********************************************************************/
+
+    TTree *t_vdm;
+    // std::maps are NTrkCut : BCID : pLB : count
+    // - Raw counts, straight from TAG
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, Float_t> > > NVtxBeforeSplitCorrection;
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, Float_t> > > NEvtBeforeSplitCorrection;
+    // - Number of tights "recovered" from split merging
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, Float_t> > > NVtxAfterSplitCorrection; // -- Number of vertices that would have been loose, but pick up enough other vertices to become tight.
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, Float_t> > > NEvtAfterSplitCorrection; // -- Precisely, an event is 1 if if has a loose vertex that picks up enough other vertices to become tight, 0 otherwise
+
+
+    // std::map is BCID : pLB : count (because this is independent of NTrkCut).
+    std::map<Int_t, std::map<Int_t, Float_t> > NTrig;
+    //The branches will be declared when saving.
+
+
+    /*********************************************************************/
+    // Important plots
+    /*********************************************************************/
+    // std::maps are NTrkCut : BCID : Histogram
+    std::map<Int_t, TH2F*> h_privtx_z_pLB;
+    std::map<Int_t, TH1F*> h_events_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_z_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_Dz_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_Dz_LooseTight_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_Dz_TightLoose_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_Dz_LooseLoose_pLB;
+
+    // Split vertex studies
+    std::map<Int_t, TH2F*> h_vtx_dz_dzsig;
+
+
+    /*********************************************************************/
+    // Less important plots
+    /*********************************************************************/
+    std::map<Int_t, TH2F*> h_evt_nvtx_before_remerge_pLB;
+    std::map<Int_t, TH2F*> h_evt_nvtx_after_remerge_pLB;
+
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_x_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_y_pLB;
+
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_xx_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_yy_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_zz_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_xy_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_xz_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_yz_pLB;
+
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_chi2_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_ndof_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_chi2ndof_pLB;
+    std::map<Int_t, TH2F*> h_vtx_nTracks_pLB;
+
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_px_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_py_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_pz_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_E_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_vtx_sumPt_pLB;
+
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_nvtx_pLB;
+    std::map<Int_t, std::map<Int_t, TH1F*> > h_L1_BGRP7_pLB;
+    std::map<Int_t, std::map<Int_t, TH1F*> > h_L1_3J10_pLB;
+
+    /* Track plots, for mu scan BCID debugging */
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_pt_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_eta_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_chi2ndf_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_chi2_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_ndf_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nBLHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nPixHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nSCTHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nTRTHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nTRTHighTHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nPixHoles_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nSCTHoles_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nTRTHoles_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nHits_pLB;
+    std::map<Int_t, std::map<Int_t, TH2F*> > h_trk_nHoles_pLB;
+
+
+    /*********************************************************************/
+    // Counters
+    /*********************************************************************/
+    std::map<TString, Float_t> m_triggerCounts;
+
+    /*********************************************************************/
+    // Internal stuff
+    /*********************************************************************/
+
+    Int_t current_pLB; //store current pLB
+    Int_t current_pLB_run; //store run for which we have loaded pLB info
+    std::vector<std::pair<Int_t, std::pair<Double_t, Double_t> > > pseudoLB_Timestamps; //store pLB time stamps (start-end)
+    std::vector<Int_t> plb_list;
+    std::vector<std::pair<Int_t, Int_t> > pLB_boundaries; // Beginning and end of each scan.
+    std::vector<std::pair<Double_t, Double_t> > timestamp_boundaries;
+    Int_t pLBmin, pLBmax, nPLB;
+
+    bool m_InitBcidHistograms; //needed since we know BCID shceme only at the loop-level
+
+    // -- counters
+    Int_t m_TotEvents; // Total events
+    Int_t m_TotRawEvents;
+
+    std::map<Int_t, bool> m_isTightBeforeSplitCorrection; // std::map NTrkCut : evt satisfies cut
+    std::map<Int_t, bool> m_isTightAfterSplitCorrection; // std::map NTrkCut : evt satisfies cut
+
+    // -- Output
+    TString outputFileName;
+    ofstream outputTxt;
+
+    // -- Class Parameters
+    std::vector<Int_t> bcidListCollisions; //intereseting BCID, Collisions
+    std::vector<Int_t> nTrkCuts;
+    TString dumpTxtFileName;
+    ofstream dumpTxtFile;
+    Int_t m_goodVertexVersion;
+    bool physics_run;
+
+    // -- Helper functions
+/*    TH1F* defineHistogram(TString name,
+                          unsigned int bins, Double_t lbin, Double_t ubin,
+                          TString xaxistitle, TString yaxistitle,
+                          bool save=true, TString title="");
+    TH2F* define2DHistogram(TString name, Int_t xbins, Double_t lxbin, Double_t uxbin,
+                            Int_t ybins, Double_t lybin, Double_t uybin,
+                            TString xaxistitle, TString yaxistitle,
+                            bool save=true, TString title="");
+    TH3F* define3DHistogram(TString name, unsigned
+                            int xbins, Double_t lxbin, Double_t uxbin,
+                            unsigned int ybins, Double_t lybin, Double_t uybin,
+                            unsigned int zbins, Double_t lzbin, Double_t uzbin,
+                            TString xaxistitle, TString yaxistitle, TString zaxistitle,
+                            bool save=true, TString title="");*/
+    int isGoodVertex(int vertexToCheck=-1);
+    int qualityVertexVersion, qualityVertexModifier, qualityVertexParameter;
+    int timestampInScan(Double_t ts);
+
+    //  double GetVxNDF(int VxIndex); // get ndof of vertex
+    void LoadAndAddPseudoLB(TString fileName); //load and add pseudoLB info to pseudoLB_Timestamps std::vector
+
+//    // -- std::map to store histograms to be saved: [name, [type, TH1-object]]
+//    std::map<std::string, std::pair<std::string, TH1* > > storageHistQueue;
+    void saveHistograms();
+
+    //Trigger decision tool
+    D3PD::TrigDecisionToolD3PD* triggerTool;
+    TChain *trigMetaDataTree;
+    TString triggerName; ///< Trigger filtering, if not empty
+
+
+
+  public:
+    AnaVtxTree();
+    ~AnaVtxTree() {};
+
+    virtual Bool_t Process(Long64_t entry);
+    virtual void SlaveBegin(TTree *tree);
+    virtual void SlaveTerminate();
+
+    TString SetOutputFileName(TString f) {
+      return (outputFileName = f);
+    };
+
+    //Trigger filtering, need to provide also trigger meta-data tree
+    void SetTriggerFilter(TString p_triggerName, TChain *p_trigMetaDataTree=0);
+    void SetMaxChi2Ndf(Float_t p_max_chi2ndf);
+
+    //Triggger requirements
+    // 0: None (default)
+    // 1: L1_MBTS_1
+    // 2: L1_MBTS_1 || L1_MBTS_1_UNPAIRED
+    void SetDumpTxtFileName(TString name);
+    
+  private:
+    void SetupLBInfo( const unsigned int &runNumber );
+    void InitBCIDHists();
+    
+    // Helper functions to concatenate strings and doubles
+    std::string str( const std::string &inStr, const double &dbl ) {
+      std::stringstream combine;
+      combine << inStr << dbl;
+      return combine.str();
+    }
+
+    TString cstr( const std::string &inStr, const double &dbl ) {
+      return str(inStr,dbl).c_str();
+    }
+
+    std::string str( const std::string &str1, const std::string &str2 ) {
+      std::stringstream combine;
+      combine << str1 << str2;
+      return combine.str();
+    }
+
+    TString cstr( const std::string &str1, const std::string &str2 ) {
+      return str(str1,str2).c_str();
+    }
+
+
+};
+
+#endif

@@ -1,0 +1,80 @@
+- get TRP files from castor (need tdaq setup, use ctp version here):
+
+source /afs/cern.ch/atlas/project/tdaq/level1/ctp/setup/setup-l1ct.sh -r l1ct-02-00-11
+
+call coca_get_info to find out where on castor TRP files are (time string needed, here take run 182013 as example):
+
+coca_get_info -l files -d TRP-Rates -s 2011-05-15 2>&1 | tee /tmp/toto.txt
+
+Check in toto.txt in which zip archive file the run file you need is, then do:
+
+xrdcp root://castoratlas//castor/cern.ch/atlas/atlascerngroupdisk/tdaq-mon/coca/coca_TRP-Rates_001074.zip .
+
+to get the zip file (change zip file name accordingly).
+
+Once you have the TRP file, you can run MakeTrpRates.py, setting the following 3 lines to whatever you need:
+
+trpNtup = "TriggerRates_ATLAS_182013.root"
+scanNtup = "/afs/.cern.ch/atlas/project/LumiWG/CoolScanNtuple/2011MayScanRaw-v8.root"
+run = 182013
+
+To run the script, do:
+
+asetup --builds AtlasProduction,16.6.2.4,here
+python -i MakeTrpRates.py  
+
+This script fills histograms of the trigger rate after prescale and
+after veto (FineTriggerRateAP and FineTriggerRateAV), the binning is set
+to 1 second. Bins are only filled if we are in a pseudo lumi block, that
+is, if we are scanning. The histograms are then written to an output
+root file, VdMCheck.root.
+
+The next step is to process all TAG files of the vdm stream of the run
+you need. This is needed since the event rate per second is used for the
+deadtime calculation. The dead fraction is taken as (event rate on disk)
+/ (trigger rate after prescale, averaged over a pLB). In the numerator
+one could normally also take the trigger rate after veto, but due to the
+TRP not publishing the final rate point of a lumiblock (lumi block, not
+pseudo lumi block), using the event rate is correct, using the AV
+trigger rate would bias the deadtime.
+
+Once the TAG files you need are available (download them with dq2, or
+get them from castor directly), change the corresponding lines in ProcessTAG.py:
+
+scanNtup = "/afs/.cern.ch/atlas/project/LumiWG/CoolScanNtuple/2011MayScanRaw-v8.root"
+tagNtup = [
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0003.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0004.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0002.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0005.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0006.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0001.1",
+"/tmp/berge/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848/data11_7TeV.00182013.calibration_VdM.merge.TAG.x123_m841_m848._0007.1",
+           ]
+run = 182013
+
+
+and run the script (takes very long, would be much better to run a C++
+compiled script here):
+
+python -i ProcessTAG.py
+
+L1_MBTS_2_BGRP7 is used as trigger to select events by default. The
+output histogram, FineEventRate, is once again stored in VdMCheck.root.
+
+The final script to runs is dt.py, which takes the histograms of the
+previous steps, and derives a dt correction in bins of pseudo lumi
+blocks. A histogram, Livefractions, is produced and stored in the output
+file again. This histogram has as many bins as there are pseudo lumi
+blocks (bin x is the x'th pseudo lumi block, not pseudo lumi block nr
+x!). You need to divide the event rate by the bin content to get a dt
+corrected rate.
+
+This final script produces also a vdM 'fit ready' histogram from the
+chosen raw trigger rate after prescale, AfterPrescaleVdmHist. That's
+thought as a cross check, in case the dt corrected event curve looks
+funny...
+
+I have run the scripts already for the May 7 TeV scan, and only quickly
+looked at the result. Maybe you can make a few more checks, like compare
+your vdM vertex curve to the raw trigger histogram that I produced.

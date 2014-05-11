@@ -1,0 +1,283 @@
+#define DEBUG_VTXCALIBRATION
+
+#include "VdM/VtxCalibration.h"
+#include "GlobalSettings/GlobalSettings.h"
+
+VtxCalibration::VtxCalibration(TString p_path) {
+
+  /**
+    *  Automatic constructor
+    * Loads as much info as possible from /u/dryu/Luminosity/VdM/results.
+    */
+  path_base = p_path;
+
+  //runs.push_back("182013");
+  runs.push_back("201351");
+
+  //reco_settings.push_back("17.2-normal");
+  //reco_settings.push_back("17.2-normal_bs-45mm");
+  //reco_settings.push_back("17.2-normal_bs-55mm");
+  reco_settings.push_back("17.2-VtxLumi");
+
+  vtx_settings.push_back("NVtx");
+  //vtx_settings.push_back("NEvt");
+  //vtx_settings.push_back("NUnf");
+
+  nTrkCuts.push_back(2);
+  nTrkCuts.push_back(3);
+  nTrkCuts.push_back(4);
+  nTrkCuts.push_back(5);
+  nTrkCuts.push_back(7);
+  nTrkCuts.push_back(10);
+
+  run_to_energy["182013"] = 7;
+  run_to_energy["201351"] = 8;
+
+  run_to_default_fit["182013"] = 0;
+  run_to_default_fit["201351"] = 3;
+
+  run_to_bcids["182013"].push_back(81);
+  run_to_bcids["182013"].push_back(867);
+  run_to_bcids["182013"].push_back(2752);
+  run_to_bcids["201351"].push_back(1);
+  run_to_bcids["201351"].push_back(241);
+  run_to_bcids["201351"].push_back(2881);
+  run_to_bcids["201351"].push_back(3121);
+
+}
+
+
+VtxCalibration::~VtxCalibration() {
+
+}
+
+void VtxCalibration::Initialize() {
+
+  for (vector<TString>::iterator ir = runs.begin(); ir != runs.end(); ++ir) {
+    for (vector<TString>::iterator is = reco_settings.begin(); is != reco_settings.end(); ++is) {
+      for (vector<TString>::iterator iv = vtx_settings.begin(); iv != vtx_settings.end(); ++iv) {
+        stringstream ss;
+        ss << path_base << "/" << GlobalSettings::path_VdM_prefix <<*ir << "/" << *is << "/" << *iv << "/vdm_results.root";
+
+        cout << "[VtxCalibration] INFO : Opening file " << ss.str() << endl;
+
+        TFile *f_in = new TFile(TString(ss.str()), "READ");
+        if (f_in->IsOpen()) {
+          TTree *t_in = (TTree*)f_in->Get("VdmResults");
+
+          Int_t           Scan;
+          Int_t           BCID;
+          Int_t           NTrkCut;
+          vector<double>  *SigmaVis;
+          vector<double>  *SigmaVisErr;
+          vector<double>  *LumiSp;
+          vector<double>  *LumiSpErr;
+          vector<double>  *Lumi;
+          vector<double>  *LumiErr;
+          vector<double>  *SigmaX;
+          vector<double>  *SigmaY;
+          vector<double>  *MuMaxX;
+          vector<double>  *MuMaxY;
+          vector<double>  *CX;
+          vector<double>  *CY;
+          vector<double>  *Chi2NdfX;
+          vector<double>  *Chi2NdfY;
+          vector<double>  *SigmaXErr;
+          vector<double>  *SigmaYErr;
+          vector<double>  *MuMaxXErr;
+          vector<double>  *MuMaxYErr;
+          vector<double>  *CXErr;
+          vector<double>  *CYErr;
+          TBranch        *b_Scan;   //!
+          TBranch        *b_BCID;   //!
+          TBranch        *b_NTrkCut;   //!
+          TBranch        *b_SigmaVis;   //!
+          TBranch        *b_SigmaVisErr;   //!
+          TBranch        *b_LumiSp;   //!
+          TBranch        *b_LumiSpErr;   //!
+          TBranch        *b_Lumi;   //!
+          TBranch        *b_LumiErr;   //!
+          TBranch        *b_SigmaX;   //!
+          TBranch        *b_SigmaY;   //!
+          TBranch        *b_MuMaxX;   //!
+          TBranch        *b_MuMaxY;   //!
+          TBranch        *b_CX;   //!
+          TBranch        *b_CY;   //!
+          TBranch        *b_Chi2NdfX;   //!
+          TBranch        *b_Chi2NdfY;   //!
+          TBranch        *b_SigmaXErr;   //!
+          TBranch        *b_SigmaYErr;   //!
+          TBranch        *b_MuMaxXErr;   //!
+          TBranch        *b_MuMaxYErr;   //!
+          TBranch        *b_CXErr;   //!
+          TBranch        *b_CYErr;   //!
+
+          SigmaVis = 0;
+          SigmaVisErr = 0;
+          LumiSp = 0;
+          LumiSpErr = 0;
+          Lumi = 0;
+          LumiErr = 0;
+          SigmaX = 0;
+          SigmaY = 0;
+          MuMaxX = 0;
+          MuMaxY = 0;
+          CX = 0;
+          CY = 0;
+          Chi2NdfX = 0;
+          Chi2NdfY = 0;
+          SigmaXErr = 0;
+          SigmaYErr = 0;
+          MuMaxXErr = 0;
+          MuMaxYErr = 0;
+          CXErr = 0;
+          CYErr = 0;
+
+          t_in->SetMakeClass(1);
+
+          t_in->SetBranchAddress("Scan", &Scan, &b_Scan);
+          t_in->SetBranchAddress("BCID", &BCID, &b_BCID);
+          t_in->SetBranchAddress("NTrkCut", &NTrkCut, &b_NTrkCut);
+          t_in->SetBranchAddress("SigmaVis", &SigmaVis, &b_SigmaVis);
+          t_in->SetBranchAddress("SigmaVisErr", &SigmaVisErr, &b_SigmaVisErr);
+          t_in->SetBranchAddress("LumiSp", &LumiSp, &b_LumiSp);
+          t_in->SetBranchAddress("LumiSpErr", &LumiSpErr, &b_LumiSpErr);
+          t_in->SetBranchAddress("Lumi", &Lumi, &b_Lumi);
+          t_in->SetBranchAddress("LumiErr", &LumiErr, &b_LumiErr);
+          t_in->SetBranchAddress("SigmaX", &SigmaX, &b_SigmaX);
+          t_in->SetBranchAddress("SigmaY", &SigmaY, &b_SigmaY);
+          t_in->SetBranchAddress("MuMaxX", &MuMaxX, &b_MuMaxX);
+          t_in->SetBranchAddress("MuMaxY", &MuMaxY, &b_MuMaxY);
+          t_in->SetBranchAddress("CX", &CX, &b_CX);
+          t_in->SetBranchAddress("CY", &CY, &b_CY);
+          t_in->SetBranchAddress("Chi2NdfX", &Chi2NdfX, &b_Chi2NdfX);
+          t_in->SetBranchAddress("Chi2NdfY", &Chi2NdfY, &b_Chi2NdfY);
+          t_in->SetBranchAddress("SigmaXErr", &SigmaXErr, &b_SigmaXErr);
+          t_in->SetBranchAddress("SigmaYErr", &SigmaYErr, &b_SigmaYErr);
+          t_in->SetBranchAddress("MuMaxXErr", &MuMaxXErr, &b_MuMaxXErr);
+          t_in->SetBranchAddress("MuMaxYErr", &MuMaxYErr, &b_MuMaxYErr);
+          t_in->SetBranchAddress("CXErr", &CXErr, &b_CXErr);
+          t_in->SetBranchAddress("CYErr", &CYErr, &b_CYErr);
+
+          Long64_t entries = t_in->GetEntriesFast();
+          std::map<Int_t, Double_t> weights;
+          for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+            weights[*nTrkCut] = 0.;
+            xsec[run_to_energy[*ir]][*nTrkCut][*is][*iv] = 0.;
+            xsec_err[run_to_energy[*ir]][*nTrkCut][*is][*iv] = 0.;
+          }
+          for (int i = 0; i < entries; i++) {
+            t_in->GetEntry(i);
+            xsec[run_to_energy[*ir]][NTrkCut][*is][*iv] += (*SigmaVis)[run_to_default_fit[*ir]] * (*Lumi)[run_to_default_fit[*ir]];
+
+            xsec_err[run_to_energy[*ir]][NTrkCut][*is][*iv] += TMath::Power((*SigmaVisErr)[run_to_default_fit[*ir]] * (*Lumi)[run_to_default_fit[*ir]], 2);
+            weights[NTrkCut] += (*Lumi)[run_to_default_fit[*ir]];
+          }
+          for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+            if ((*iv == "NVtx") && (*nTrkCut == 2)) {
+              continue;
+            }
+            xsec[run_to_energy[*ir]][*nTrkCut][*is][*iv] = xsec[run_to_energy[*ir]][*nTrkCut][*is][*iv] / weights[*nTrkCut];
+            xsec_err[run_to_energy[*ir]][*nTrkCut][*is][*iv] = TMath::Sqrt(xsec_err[run_to_energy[*ir]][NTrkCut][*is][*iv]) / weights[*nTrkCut];
+          }
+        } else {
+          cout << "[VtxCalibration] INFO : File " << ss.str() << "not found." << endl;
+          for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+            xsec[run_to_energy[*ir]][*nTrkCut][*is][*iv] = 0.;
+            xsec_err[run_to_energy[*ir]][*nTrkCut][*is][*iv] = 0.;
+          }
+        }
+      }
+    }
+  }
+}
+
+void VtxCalibration::PrintLatexTable() {
+
+  cout << "[VtxCalibration] INFO : Printing table of cross sections." << endl;
+  cout << "\\begin{table}" << endl;
+  cout << "\t\\begin{tabular}{|c|c|c|c|c|}" << endl;
+  cout << "\t\t\\hline" << endl;
+  cout << "\t\t \\ NTrkCut & 5 & 7 & 10 \\\\" << endl;
+  cout << "\t\t\\hline" << endl;
+  for (vector<TString>::iterator ir = runs.begin(); ir != runs.end(); ++ir) {
+    for (vector<TString>::iterator is = reco_settings.begin(); is != reco_settings.end(); ++is) {
+      for (vector<TString>::iterator iv = vtx_settings.begin(); iv != vtx_settings.end(); ++iv) {
+        cout << "\t\tRun " << *ir << " / " << *is << " / " << *iv << " ";
+        for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+          cout << " & " << xsec[run_to_energy[*ir]][*nTrkCut][*is][*iv] << " $\\pm$ " << xsec_err[run_to_energy[*ir]][*nTrkCut][*is][*iv];
+        }
+        cout << "\\\\" << endl;
+        cout << "\\hline" << endl;
+      }
+    }
+  }
+  cout << "\t\\end{tabular}" << endl;
+  cout << "\\end{table}" << endl;
+}
+
+double VtxCalibration::GetCrossSection(Float_t p_energy, Int_t p_ntrkcut, TString p_settings, TString p_vtx_method) {
+
+  double val = 0.;
+
+  if (xsec.find(p_energy) != xsec.end()) {
+    if (xsec[p_energy].find(p_ntrkcut) != xsec[p_energy].end()) {
+      if (xsec[p_energy][p_ntrkcut].find(p_settings) != xsec[p_energy][p_ntrkcut].end()) {
+        if (xsec[p_energy][p_ntrkcut][p_settings].find(p_vtx_method) != xsec[p_energy][p_ntrkcut][p_vtx_method].end()) {
+
+          Double_t ghost_charge_scale = 1.;
+          /*if (p_energy == 7) {
+            cout << "[VtxCalibration] WARNING : Applying a hack!!! Scaling the visible cross section up by 0.7% due to ghost charge!" << endl;
+            ghost_charge_scale = 1. / (1. - 0.0072);
+          }*/
+          val = xsec[p_energy][p_ntrkcut][p_settings][p_vtx_method] * ghost_charge_scale;
+
+        } else {
+          cerr << "ERROR: Cannot find x-sec Method ";
+        }
+      } else {
+        cerr << "ERROR: Cannot find x-sec Settings ";
+      }
+    } else {
+      cerr << "ERROR: Cannot find x-sec nTrkCut ";
+    }
+  } else {
+    cerr << "ERROR: Cannot find x-sec Energy ";
+  }
+  if (val == 0.) {
+    cout << "ERROR: Cross-section is zero. (Energy,nTrkCut,Settings,Method)=" << p_energy << ", " << p_ntrkcut << ", " << p_settings << ", " << p_vtx_method << endl;
+  }
+
+  return val;
+
+}
+
+double VtxCalibration::GetCrossSectionError(Float_t p_energy, Int_t p_ntrkcut, TString p_settings, TString p_vtx_method) {
+  if (xsec_err.find(p_energy) != xsec_err.end()) {
+    if (xsec_err[p_energy].find(p_ntrkcut) != xsec_err[p_energy].end()) {
+      if (xsec_err[p_energy][p_ntrkcut].find(p_settings) != xsec_err[p_energy][p_ntrkcut].end()) {
+        if (xsec_err[p_energy][p_ntrkcut][p_settings].find(p_vtx_method) !=
+            xsec_err[p_energy][p_ntrkcut][p_vtx_method].end()) {
+
+          return xsec_err[p_energy][p_ntrkcut][p_settings][p_vtx_method];
+        } else {
+          cerr << "ERROR: Cannot find x-sec error Method ";
+        }
+      } else {
+        cerr << "ERROR: Cannot find x-sec error Settings ";
+      }
+    } else {
+      cerr << "ERROR: Cannot find x-sec error nTrkCut ";
+    }
+  } else {
+    cerr << "ERROR: Cannot find x-sec error Energy ";
+  }
+
+  cout << "(Energy,nTrkCut,Settings,Method)="
+       << p_energy << ", " << p_ntrkcut << ", " << p_settings << ", " << p_vtx_method << endl;
+  return 0.0;
+
+}
+
+
+

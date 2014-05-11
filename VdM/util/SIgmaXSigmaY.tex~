@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage[table]{xcolor}
+\usepackage[landscape]{geometry}
+\definecolor{complement}{RGB}{255,0,0}
+
+\begin{document}
+\large Visible cross section for VertexLumi settings
+\begin{table}
+	\scriptsize
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+
+
+								                \hline
+                Scan/BCID\ \ NTrk & 2& 3& 4& 5& 7& 10 \\
+                \hline
+                1 / 81 & 30.68 $\pm$ 0.03 & 24.45 $\pm$ 0.05 & 19.87 $\pm$ 0.04 & 16.31 $\pm$ 0.04 & 11.13 $\pm$ 0.03 & 6.37 $\pm$ 0.02\\
+                \hline
+                1 / 867 & 30.68 $\pm$ 0.05 & 24.51 $\pm$ 0.04 & 19.9 $\pm$ 0.04 & 16.34 $\pm$ 0.03 & 11.17 $\pm$ 0.03 & 6.395 $\pm$ 0.02\\
+                \hline
+                1 / 2752 & 30.42 $\pm$ 0.05 & 24.29 $\pm$ 0.04 & 19.73 $\pm$ 0.02 & 16.19 $\pm$ 0.03 & 11.06 $\pm$ 0.03 & 6.349 $\pm$ 0.02\\
+                \hline
+                2 / 81 & 30.79 $\pm$ 0.05 & 24.52 $\pm$ 0.03 & 19.9 $\pm$ 0.03 & 16.33 $\pm$ 0.02 & 11.15 $\pm$ 0.02 & 6.401 $\pm$ 0.02\\
+                \hline
+                2 / 867 & 30.71 $\pm$ 0.05 & 24.49 $\pm$ 0.04 & 19.88 $\pm$ 0.02 & 16.32 $\pm$ 0.04 & 11.14 $\pm$ 0.03 & 6.368 $\pm$ 0.02\\
+                \hline
+                2 / 2752 & 30.67 $\pm$ 0.05 & 24.45 $\pm$ 0.04 & 19.84 $\pm$ 0.04 & 16.29 $\pm$ 0.03 & 11.13 $\pm$ 0.03 & 6.367 $\pm$ 0.02\\
+                \hline
+                \textcolor{complement}{Scan 1 Avg} & \textcolor{complement}{30.5962 $\pm$ 0.02451} & \textcolor{complement}{24.417 $\pm$ 0.02519} & \textcolor{complement}{19.8356 $\pm$ 0.02065} & \textcolor{complement}{16.2773 $\pm$ 0.02063} & \textcolor{complement}{11.1202 $\pm$ 0.01713} & \textcolor{complement}{6.37126 $\pm$ 0.01309}\\
+                \hline
+                Scan 1 RMS & 0.12 & 0.09 & 0.075 & 0.065 & 0.047 & 0.018\\
+                \hline
+                \textcolor{complement}{Scan 2 Avg} & \textcolor{complement}{30.7239 $\pm$ 0.02852} & \textcolor{complement}{24.4877 $\pm$ 0.02221} & \textcolor{complement}{19.8745 $\pm$ 0.0175} & \textcolor{complement}{16.311 $\pm$ 0.01816} & \textcolor{complement}{11.1407 $\pm$ 0.01509} & \textcolor{complement}{6.37923 $\pm$ 0.01156}\\
+                \hline
+                Scan 2 RMS & 0.054 & 0.025 & 0.022 & 0.019 & 0.006 & 0.016\\
+                \hline
+                \textcolor{complement}{Total Avg} & \textcolor{complement}{30.6596 $\pm$ 0.01879} & \textcolor{complement}{24.4521 $\pm$ 0.01681} & \textcolor{complement}{19.8549 $\pm$ 0.01355} & \textcolor{complement}{16.294 $\pm$ 0.01375} & \textcolor{complement}{11.1304 $\pm$ 0.01142} & \textcolor{complement}{6.37522 $\pm$ 0.008736}\\
+                \hline
+                Total RMS & 0.12 & 0.075 & 0.059 & 0.051 & 0.035 & 0.018\\
+                \hline
+
+
+	\end{tabular}
+\end{table}
+
+
+\end{document}
