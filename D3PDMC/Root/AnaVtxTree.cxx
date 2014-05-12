@@ -1088,7 +1088,6 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         if (skip_hs && (*it).first == 0) {
           continue;
         }
-
         reco_truth_indexmap[nv] = (*it).first;
         break;
       }

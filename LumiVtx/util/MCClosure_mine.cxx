@@ -112,11 +112,11 @@ int main(int argc, char **argv) {
 
   cout << "Loading TTree" << endl;
   
-  //TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both.root"), "READ");
-  TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both.root"), "READ");
+  TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both.root"), "READ");
+  //TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both.root"), "READ");
 
-  //TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both_tree.root"), "READ");
-  TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both_tree.root"), "READ");
+  TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both_tree.root"), "READ");
+  //TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both_tree.root"), "READ");
 
   TFile *f_raw = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/MCClosureTest_mumax20sample_NGenIntVsNVertices.root"), "READ");
   TFile *f_raw_1 = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/MCClosureTest_mumax75sample_NGenIntVsNVertices.root"), "READ");
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
   TCanvas *c_ratio_data_fit = new TCanvas("c_ratio_data_fit", "c_ratio_data_fit", 1200, 800);
 
   bool draw_first = true;
-  bool TwoFits = true;
+  bool TwoFits = false;
 
   for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 
@@ -280,7 +280,6 @@ int main(int argc, char **argv) {
         data = tg_murec_ngenint[*nTrkCut]->GetY()[i];
         data_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i];
         fiteval = fit->Eval(tg_murec_ngenint[*nTrkCut]->GetX()[i]);
-        cout << "Fit evaluated at 0: " << fit->Eval(0) << endl;
         if (fit->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         if(data_err>0){
@@ -314,7 +313,6 @@ int main(int argc, char **argv) {
         data = tg_murec_ngenint[*nTrkCut]->GetY()[i];
         data_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i];
         fiteval = fit->Eval(tg_murec_ngenint[*nTrkCut]->GetX()[i]);
-        cout << "Fit evaluated at 0: " << fit->Eval(0) << endl;
         if (fit->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         if (data_err>0){
@@ -344,7 +342,6 @@ int main(int argc, char **argv) {
         data = tg_murec_ngenint[*nTrkCut]->GetY()[i+21];
         data_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i+21];
         fiteval = fithigh->Eval(tg_murec_ngenint[*nTrkCut]->GetX()[i+21]);
-        cout << "Fit evaluated at 0: " << fithigh->Eval(0) << endl;
         if (fithigh->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         if (data_err>0){
@@ -438,22 +435,16 @@ int main(int argc, char **argv) {
       if (initial_masking_correction_factor < 1.) {
         initial_masking_correction_factor = 1.;
       }
-      cout << "//////////////////// " << i << " //////////////////////" << endl;
-      cout << "mu_raw = " << mu_raw << ", initial_masking_correction_factor = " << initial_masking_correction_factor << endl;
       //cout << initial_masking_correction_factor << endl;
       /* Subtraction method*/
-
       Double_t mu_fake = fc->GetFakeMuFromMuReconMC(mu_raw * initial_masking_correction_factor);
-      cout << "mu_fake = " << mu_fake << endl;
-
       Double_t mu_real = mu_raw - mu_fake;
       Double_t final_masking_correction_factor = mc->GetCorrectionFactor(mu_real);
       //cout << final_masking_correction_factor << endl;
-      cout << "mu_real = " << mu_real << ", final_masking_correction_factor = " << final_masking_correction_factor << endl;
       Double_t mu_vis = mu_real * final_masking_correction_factor;
-      cout << "Finally, mu_vis = " << mu_vis << endl;
-
       Double_t mu_vis_err = tg_murec_ngenint[*nTrkCut]->GetEY()[i] * final_masking_correction_factor;
+
+      cout << i << ", mu_raw=" << mu_raw << ", imcf=" << initial_masking_correction_factor << ", mu_fake=" << mu_fake << ", mu_real=" << mu_real << " fmcf=" << final_masking_correction_factor << ", mu_vis=" << mu_vis << endl;
 
       /* Multiplication method */
       /*
@@ -498,7 +489,6 @@ int main(int argc, char **argv) {
         data = tg_muvis_ngenint[*nTrkCut]->GetY()[i];
         data_err = tg_muvis_ngenint[*nTrkCut]->GetEY()[i];
         fiteval = fit1->Eval(tg_muvis_ngenint[*nTrkCut]->GetX()[i]);
-        cout << "Fit evaluated at 0: " << fit1->Eval(0) << endl;
         if (fit1->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         ratio = (1 - (data/fiteval))*100;
@@ -531,7 +521,6 @@ int main(int argc, char **argv) {
         data = tg_muvis_ngenint[*nTrkCut]->GetY()[i];
         data_err = tg_muvis_ngenint[*nTrkCut]->GetEY()[i];
         fiteval = fit1->Eval(tg_muvis_ngenint[*nTrkCut]->GetX()[i]);
-        cout << "Fit evaluated at 0: " << fit1->Eval(0) << endl;
         if (fit1->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         ratio = (1 - (data/fiteval))*100;
@@ -564,7 +553,6 @@ int main(int argc, char **argv) {
         data = tg_muvis_ngenint[*nTrkCut]->GetY()[i+21];
         data_err = tg_muvis_ngenint[*nTrkCut]->GetEY()[i+21];
         fiteval = fithigh1->Eval(tg_muvis_ngenint[*nTrkCut]->GetX()[i+21]);
-        cout << "Fit evaluated at 0: " << fithigh1->Eval(0) << endl;
         if (fithigh1->Eval(0)!=0){cout << "Fit is not passing through zero!!"<<endl;}
         res = (data-fiteval)/data_err;
         ratio = (1 - (data/fiteval))*100;
@@ -722,7 +710,6 @@ int main(int argc, char **argv) {
     tg_muvis_ngenint_res[*nTrkCut]->GetXaxis()->SetRangeUser(xmin, xmax);
     tg_muvis_ngenint[*nTrkCut]->Draw(draw_options);
     statsbox1->Draw("same");
-    l_muinsteps->AddEntry(tg_murec_ngenint[*nTrkCut],"#mu_{vis}","P");
     TLine *line11 = new TLine(xmin,1,xmax,1);
     line11->SetLineColor(kRed);
     c_muvis_ngenint->SetBottomMargin(FIGURE2_RATIO);
@@ -741,6 +728,7 @@ int main(int argc, char **argv) {
     l_trkcut->SetFillColor(0);
     l_trkcut->SetBorderSize(1);
     c_muinsteps_ngenint->cd();
+    //c_muinsteps_ngenint->SetLogy();
     tg_muvis_ngenint[*nTrkCut]->Draw("ap");
     tg_murec_ngenint[*nTrkCut]->Draw("p");
     tg_mureal_ngenint[*nTrkCut]->Draw("p");

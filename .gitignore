@@ -1,5 +1,19 @@
-*.root
+# ignore for commits
+# ignore libraries
+# ignore all object files
+# ignore all dep files
+*.d
+# ignore all dict files
+*Dict.cxx
+*Dict.h
+# ignore executables
+*.pyc
+# ignore any output form  nohup
+*.out
+#ignore root files and pdfs etc
 *.pdf
-*.txt
+*.root
+*.jpg
+# ignore emacs tmp files
 *~
-*jpg
+*.txt

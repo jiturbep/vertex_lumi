@@ -43,6 +43,7 @@ PileupMaskingCorrection::PileupMaskingCorrection(TH1D *h1, TString string1) {
   finished = false;
   max_dz = 300.;
   do_ll = true;
+  MaxNGenInt = 110;
 
   TString hname = "h_dz";
   h_dz->SetName(hname);
@@ -133,6 +134,14 @@ void PileupMaskingCorrection::FitExcluded() {
     reject = kTRUE;
     TString fname = "fit_gaussian_excluded_";
     fname += tag;
+    /*//Temporarily changing back to always fitting with template
+    f_dz_excluded = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic_exclude, -1.*max_dz, max_dz, 5);
+    //f_dz_excluded = new TF1(fname, fitFunc_generic_exclude, -1.*50., 50., 5);
+    f_dz_excluded->SetNpx(10000);
+    f_dz_excluded->SetParameter(0,h_dz_rebinned->Integral());
+    f_dz_excluded->SetParLimits(0, 0., h_dz_rebinned->Integral()*100.);
+    f_dz_excluded->FixParameter(1, -1.*exclude_dz);
+    f_dz_excluded->FixParameter(2, exclude_dz);*/
     if ( (is_MC == 0) ){
       //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
       f_dz_excluded = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic_exclude, -1.*max_dz, max_dz, 5);
@@ -158,6 +167,8 @@ void PileupMaskingCorrection::FitExcluded() {
       fit_options += "L";
     }
     
+    //Temporarily changing back to always fitting with template
+    //h_dz_rebinned->Fit(f_dz_excluded,fit_options);
     if ( (is_MC == 0) ){
       //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
       h_dz_rebinned->Fit(f_dz_excluded,fit_options);
@@ -219,6 +230,9 @@ void PileupMaskingCorrection::MakeFullGaussian() {
 
   TString fname = "fit_gaussian_full_";
   fname += tag;
+  /*//Temporarily changing back to always fitting with template
+  f_dz_full = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic, h_dz->GetXaxis()->GetXmin(), h_dz->GetXaxis()->GetXmax(), 1);
+  f_dz_full->SetParameter(0, f_dz_excluded->GetParameter(0) / rebin_factor);*/
   if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
     f_dz_full = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic, h_dz->GetXaxis()->GetXmin(), h_dz->GetXaxis()->GetXmax(), 1);
@@ -245,9 +259,6 @@ void PileupMaskingCorrection::MakeDifferentialPmask() {
 	#endif
 
   if (!low_stats) {
-    //if(is_MC==1){
-     // h_dz->Rebin(10);
-   // }
     h_pmask_dz = (TH1D*)h_dz->Clone();
     cout << "h_pmask_dz->GetNbinsX(): " << h_pmask_dz->GetNbinsX() << endl;
     TString hname = "h_pmask_dz_";
@@ -265,7 +276,7 @@ void PileupMaskingCorrection::MakeDifferentialPmask() {
         current_pmask = 0.;
       }
       h_pmask_dz->SetBinContent(i, current_pmask);
-      cout << i << " dz: " << dz << ", fit: " << fit <<", data: " << data << ", current_pmask: " << current_pmask << endl;
+      //cout << i << " dz: " << dz << ", fit: " << fit <<", data: " << data << ", current_pmask: " << current_pmask << endl;
 
       //Errors?!
       Double_t err;
@@ -772,11 +783,13 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
 
   if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
-    mumax = 40;
+    mumax = 40; 
   } else{
     //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
-    mumax = 40; //mu_max
+    mumax = 71; // Maximum value of ei_actualIntPerXing for the high mu sample
   }
+
+  cout << "[PileupMaskingCorrection] DEBUG : mumax = " << mumax << endl;
 
   TString tgname = "tg_mu_obs_vs_mu_actual_";
   tgname += tag;
@@ -1100,9 +1113,15 @@ Double_t PileupMaskingCorrection::meanMuObs(Double_t x, Double_t par) {
   // x = mu_actual
   // returns average observed mu.
   Double_t mu_obs = 0.;
+  //Double_t MaxNGenInt = 110;
+  if( (is_MC == 0) ){
+    MaxNGenInt = 40;
+  }else{
+    MaxNGenInt = 110;
+  }
   //if( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
-    for (Int_t n_gen = 1; n_gen < 80; n_gen++) {
+    for (Int_t n_gen = 1; n_gen < MaxNGenInt; n_gen++) {
       Double_t poisson_factor = TMath::Exp(-1.*x) * TMath::Power(x, n_gen) / TMath::Factorial(n_gen);
       mu_obs += poisson_factor * meanNObs(par, n_gen);
     }

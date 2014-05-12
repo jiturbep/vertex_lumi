@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
     mc_energy = "7";
   } else if (find(mc_8TeV_samples.begin(), mc_8TeV_samples.end(), tag) != mc_8TeV_samples.end()) {
     input_type = "mc";
-    input_path = GlobalSettings::path_D3PDMCResults; input_path += tag; input_path += "/"; input_path += GlobalSettings::path_D3PDMCResults_v; input_path += "/InDetTrackD3PD_results.root";
+    input_path = GlobalSettings::path_D3PDMCResults; input_path += tag; input_path += "/"; input_path += GlobalSettings::path_D3PDMCResults_v; input_path += "/InDetTrackD3PD_results_bothsamples.root";
     mc_energy = "8";
   } else if (tag == "data_7TeV_17.2_normal") {
     input_type = "data";
@@ -667,6 +667,7 @@ int main(int argc, char **argv) {
       TH1D *h_tmp_scaled;
       TH1D *h_tmp_copy;
       Double_t weight = 0.;
+      Double_t MaxNGenInt = h_dz_NGenInt->GetNbinsY();
       
       Float_t mu;
       if (mc_energy == "7") {
@@ -677,30 +678,20 @@ int main(int argc, char **argv) {
       TString path_deltaz = "MC_deltaz_NTrkCut"; path_deltaz+=*nTrkCut; path_deltaz+=".root";
       TFile *f_deltaz;
       f_deltaz = new TFile(path_deltaz,"RECREATE");
-      for (Int_t current_ngenint = 2; current_ngenint < 80; current_ngenint++) {  
-	Float_t poisson_factor = TMath::Exp(-1. * mu) * TMath::Power(mu, current_ngenint) / TMath::Factorial(current_ngenint);
-        //cout << "[INFO] Originally, poisson factor is "<< poisson_factor << ", but I am setting it to 1" << endl;
-        //poisson_factor=1;
-  	Int_t bin = h_dz_NGenInt->GetYaxis()->FindBin(current_ngenint);
+      cout << "[initializePuCorr] DEBUG: MaxNGenInt = " << MaxNGenInt << endl;
+      //Given the statistics of the MC sample, I create the delta z distribution by adding all the delta z distributions per ngenint weigthed by their integral
+      for (Int_t current_ngenint = 2; current_ngenint < MaxNGenInt; current_ngenint++) {
+        Int_t bin = h_dz_NGenInt->GetYaxis()->FindBin(current_ngenint);
         TString tmpname = "h_dz_NGenInt"; tmpname += current_ngenint; tmpname += "_NTrk"; tmpname += *nTrkCut;
         TH1D *h_tmp = (TH1D*)h_dz_NGenInt->ProjectionX(tmpname, bin, bin);
         h_tmp->Sumw2();
-        if (current_ngenint < 80){
-	  h_tmp_copy = (TH1D*)h_tmp->Clone();
-	  h_tmp_copy->Rebin(10);
+        if (current_ngenint < MaxNGenInt){
+          h_tmp_copy = (TH1D*)h_tmp->Clone();
+          h_tmp_copy->Rebin(10);
           //if (h_tmp_copy->Integral() != 0) h_tmp_copy->Scale(poisson_factor / h_tmp_copy->Integral());
           h_tmp_copy->GetXaxis()->SetLimits(-200.0,200.0);
           h_tmp_copy->Write();
         }
-        //if (h_tmp->Integral() != 0) cout << "poisson_factor/h_tmp->Integral()=" << poisson_factor << "/" << h_tmp->Integral() << "=" << poisson_factor / h_tmp->Integral() << endl;
-        //if (h_tmp->Integral() != 0) h_tmp->Scale(poisson_factor / h_tmp->Integral());
-       /* if (current_ngenint < 6){
-          h_tmp_scaled = (TH1D*)h_tmp->Clone();
-          TString tmpname_scaled = "h_dz_NGenInt"; tmpname_scaled += current_ngenint; tmpname_scaled += "_NTrk"; 
-          tmpname_scaled += *nTrkCut; tmpname_scaled += "_scaled";
-          h_tmp_scaled->SetName(tmpname_scaled);
-          h_tmp_scaled->Write();
-        }*/
 
         if (current_ngenint == 2) {
           h_dz = (TH1D*)h_tmp->Clone();
@@ -708,27 +699,61 @@ int main(int argc, char **argv) {
           h_dz->SetName(name3);
           h_dz->Scale(h_tmp->Integral());
           weight += h_tmp->Integral();
-          //cout << "weight += " << h_tmp->Integral() << endl;
         } else {
           h_dz->Add(h_tmp, h_tmp->Integral());
-          //h_dz->Add(h_tmp, 1.);
           weight+=h_tmp->Integral();
-          //cout << "weight += " << h_tmp->Integral() << endl;
         }
       }
+
       h_dz->Scale(1.0/weight);
       h_dz->Scale(1./h_dz->Integral());
       h_dz->Write();
       TH1D *h_dz_copy = (TH1D*)h_dz->Clone();
       h_dz_copy->SetName((h_dz->GetName())+TString("_copy"));
-      //h_dz_copy->Scale(1./h_dz_copy->Integral());
       h_dz_copy->Rebin(10);
       h_dz_copy->Write();
-      //f_deltaz->Close();
       cout << "weight = " << weight << endl;      
 
       cout << "[initializePuCorr] DEBUG : h_dz has " << h_dz->Integral() << " entries" << endl;
       cout << "[initializePuCorr] DEBUG : h_dz has " << h_dz->GetNbinsX() << " X bins" << endl;
+
+      /*//The old version of the code, however, created the delta z distribution reweighting with a poisson distribution
+      for (Int_t current_ngenint = 2; current_ngenint < MaxNGenInt; current_ngenint++) {
+        Float_t poisson_factor = TMath::Exp(-1. * mu) * TMath::Power(mu, current_ngenint) / TMath::Factorial(current_ngenint);
+        Int_t bin = h_dz_NGenInt->GetYaxis()->FindBin(current_ngenint);
+        TString tmpname = "h_dz_NGenInt"; tmpname += current_ngenint; tmpname += "_NTrk"; tmpname += *nTrkCut;
+        TH1D *h_tmp = (TH1D*)h_dz_NGenInt->ProjectionX(tmpname, bin, bin);
+        h_tmp->Sumw2();
+        if (current_ngenint < MaxNGenInt){
+          h_tmp_copy = (TH1D*)h_tmp->Clone();
+          h_tmp_copy->Rebin(10);
+          if (h_tmp_copy->Integral() != 0) h_tmp_copy->Scale(poisson_factor / h_tmp_copy->Integral());
+          h_tmp_copy->GetXaxis()->SetLimits(-200.0,200.0);
+          h_tmp_copy->Write();
+        }
+
+        if (h_tmp->Integral() != 0) h_tmp->Scale(poisson_factor / h_tmp->Integral());
+
+        if (current_ngenint == 2) {
+          h_dz = (TH1D*)h_tmp->Clone();
+          TString name3 = "h_dz_NTrk"; name3 += *nTrkCut;
+          h_dz->SetName(name3);
+        } else {
+          h_dz->Add(h_tmp, 1);
+        }
+      }
+
+      h_dz->Scale(1./h_dz->Integral());
+      h_dz->Write();
+      TH1D *h_dz_copy = (TH1D*)h_dz->Clone();
+      h_dz_copy->SetName((h_dz->GetName())+TString("_copy"));
+      h_dz_copy->Rebin(10);
+      h_dz_copy->Write();
+
+      cout << "[initializePuCorr] DEBUG : h_dz has " << h_dz->Integral() << " entries" << endl;
+      cout << "[initializePuCorr] DEBUG : h_dz has " << h_dz->GetNbinsX() << " X bins" << endl;*/
+    
+      ////////////// Z distribution  
       
       TH2D *h_z_NGenInt = (TH2D*)f_in->Get("hist/h_privtx_z_NGenInt");
       TH1D *h_z;
@@ -739,7 +764,7 @@ int main(int argc, char **argv) {
       TFile *f_z;
       f_z = new TFile(path_z,"RECREATE");
       
-      for (Int_t current_ngenint = 1; current_ngenint < 80; current_ngenint++) {
+      for (Int_t current_ngenint = 1; current_ngenint < MaxNGenInt; current_ngenint++) {
         Float_t poisson_factor = TMath::Exp(-1. * mu) * TMath::Power(mu, current_ngenint) / TMath::Factorial(current_ngenint);
         //cout << "[INFO] Line 724, Originally, poisson factor is "<< poisson_factor << ", but I am setting it to 1" << endl;
         //poisson_factor=1;
@@ -749,7 +774,7 @@ int main(int argc, char **argv) {
         TH1D *h_tmp = (TH1D*)h_z_NGenInt->ProjectionX(tmpname, bin, bin);
         //h_tmp->Print("all");
         h_tmp->Sumw2();
-        if (current_ngenint < 80){
+        if (current_ngenint < MaxNGenInt){
           h_tmp_copy2 = (TH1D*)h_tmp->Clone();
           h_tmp_copy2->Rebin(10);
           if (h_tmp_copy2->Integral() != 0) h_tmp_copy2->Scale(poisson_factor / h_tmp_copy2->Integral());
@@ -793,6 +818,7 @@ int main(int argc, char **argv) {
       pmc[*nTrkCut]->low_stats = false;
       pmc[*nTrkCut]->rebin_factor = 10;
       pmc[*nTrkCut]->is_MC = kTRUE;
+      pmc[*nTrkCut]->MaxNGenInt = MaxNGenInt;
       
       // - Generate expected delta Z distribution
       pmc[*nTrkCut]->GenerateDzDistribution(h_z,tag);

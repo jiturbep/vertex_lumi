@@ -1,0 +1,10 @@
+To recover the MC Closure Test results from the 5th of May I need to rerun the pile up masking correction twice and the fake correction once in this order:
+
+1. Modify the masking correction for MC so that the delta z distribution is calculated by reweighting all the delta z distributions per NGenInt with a poisson 
+distribution of mean 5 and then fit it with a delta-z template. This is done by modifying both the files initializePuCorr.cxx and PileIupMaskingCorrection.cxx
+(there should be sufficient comments to find all the the places that need to be change, most of what I need should be already there and need only uncomment out).
+2. Run the masking correction to obtain pmask_cache.root
+3. Change mu_max from 71 to 40 in initializeFakeCorrection.cxx and calculate the fake correction to obtain fakerates.root (this file should come out the same as the
+one called "Recovered...from04052014".
+4. Change back to the current version of the masking correction and run it again to get a new file pmask_cache.root
+5. Run the closure test.

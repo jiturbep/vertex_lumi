@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
     path_vertex_histograms += tag;
     path_vertex_histograms += "/";
     path_vertex_histograms += GlobalSettings::path_D3PDMCResults_v;
-    path_vertex_histograms += "InDetTrackD3PD_results.root";
+    path_vertex_histograms += "InDetTrackD3PD_results_bothsamples.root";
   }
 
   cout << "[initializeFakeCorr] path_vertex_histograms = " << path_vertex_histograms << endl;
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
   
 
   Int_t mu_points = 2000;
-  Float_t mu_max = 40.;
+  Float_t mu_max = 71.; //maximun value of ei_actualIntPerXing variable in the high mu sample
 
   std::map<Int_t, TH1D*> h_NTrig_NGenInt, h_z;
   std::map<Int_t, TH1D*> h_fakes_NGenInt, h_recon_NGenInt;
@@ -197,16 +197,18 @@ int main(int argc, char **argv) {
     // Set maximum mu value for x-axes
     Float_t mu_limit = 0.;
     for (int bin = 1; bin <= h_NTrig_NGenInt[*nTrkCut]->GetNbinsX(); bin++) {
-      if (h_NTrig_NGenInt[*nTrkCut]->GetBinContent(bin) < 100) {
+      if (h_NTrig_NGenInt[*nTrkCut]->GetBinContent(bin) < 50) {
         mu_limit = h_NTrig_NGenInt[*nTrkCut]->GetBinCenter(bin);
-        mu_limit = 22;
         break;
       } else {
         if (tag == "mc_8TeV_17.2_VtxLumi_2newsets") {mu_limit = 80;}
         else{ mu_limit = 22; }
       }
     }
-    cout << "Restricting maximum mu to " << mu_limit << endl;
+    //mu_limit = 80;
+    cout << "[initializeFakeCorr] DEBUG: Restricting mu" << endl;
+    cout << "mu_limit = " << mu_limit << ", mu_max = " << mu_max << endl;
+    cout << "h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() = " << h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() << endl;
 
     hname = "h_mu_recon_NGenInt_NTrk"; hname += *nTrkCut;
     h_mu_recon_NGenInt[*nTrkCut] = (TH1D*)h_recon_NGenInt[*nTrkCut]->Clone();
@@ -297,6 +299,7 @@ int main(int argc, char **argv) {
 
     if (*nTrkCut != 2) {
       pmc[*nTrkCut] = new PileupMaskingCorrection(tag, *nTrkCut);
+      pmc[*nTrkCut]->is_MC = kTRUE;
     }
     TH2D *h_z_mu = (TH2D*)f_in->Get("hist/h_privtx_z_mu")->Clone();
     TString name = "h_z_NTrk"; name += *nTrkCut;
@@ -306,6 +309,8 @@ int main(int argc, char **argv) {
       pmc[*nTrkCut]->GenerateDzDistribution(h_z[*nTrkCut]);
       pmc[*nTrkCut]->GenerateCorrection(pmc[*nTrkCut]->GetExpectedDzDistribution());
     }
+
+    cout << "[initializeFakeCorrection] INFO: tg_mu_fake_mu[*nTrkCut]->GetXaxis()->GetXmax() " << tg_mu_fake_mu[*nTrkCut]->GetXaxis()->GetXmax() << endl;
 
     for (int i = 1; i <= mu_points; i++) {
 
@@ -325,6 +330,8 @@ int main(int argc, char **argv) {
       if (masking_correction_factor < 1.) masking_correction_factor = 1.;
       Float_t current_MuReconMC = current_mu_recon * masking_correction_factor;
       Float_t current_MuReconMC_err = current_mu_recon_err * masking_correction_factor;
+
+      cout << i << ", mu_inel=" << current_mu_inel << ", mu_fake=" << current_mu_fake << ", mu_recon=" << current_mu_recon << ", mcf=" << masking_correction_factor << ", MuReconMC=" << current_MuReconMC << endl;
 
       tg_mu_fake_MuReconMC[*nTrkCut]->SetPoint(i-1, current_MuReconMC, current_mu_fake);
       tg_mu_fake_MuReconMC[*nTrkCut]->SetPointError(i-1, current_MuReconMC_err, current_mu_fake_err);

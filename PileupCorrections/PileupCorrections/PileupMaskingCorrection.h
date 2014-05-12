@@ -92,6 +92,7 @@ class PileupMaskingCorrection {
     Float_t max_dz;
     bool do_ll;
     bool redo_cache;
+    Double_t MaxNGenInt;
 
     //Methods
     bool pmask_available;
