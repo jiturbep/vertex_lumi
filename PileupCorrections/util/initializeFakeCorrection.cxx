@@ -107,6 +107,9 @@ int main(int argc, char **argv) {
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_2newsets");
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax20");
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax75");
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_BothSamples");
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_LowMuSample");
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_HighMuSample");
 
   if ((find(mc_7TeV_samples.begin(), mc_7TeV_samples.end(), tag) == mc_7TeV_samples.end()) && (find(mc_8TeV_samples.begin(), mc_8TeV_samples.end(), tag) == mc_8TeV_samples.end())) {
     cerr << "[initializeFakeCorrection] ERROR : Unknown sample specified: " << tag << ". Exiting..." << endl;
@@ -117,7 +120,7 @@ int main(int argc, char **argv) {
     path_vertex_histograms += tag;
     path_vertex_histograms += "/";
     path_vertex_histograms += GlobalSettings::path_D3PDMCResults_v;
-    path_vertex_histograms += "InDetTrackD3PD_results_bothsamples.root";
+    path_vertex_histograms += "InDetTrackD3PD_results.root";
   }
 
   cout << "[initializeFakeCorr] path_vertex_histograms = " << path_vertex_histograms << endl;
@@ -130,8 +133,8 @@ int main(int argc, char **argv) {
   
   std::vector<Int_t> nTrkCuts;
   //nTrkCuts.push_back(2);
-  //nTrkCuts.push_back(3);
-  //nTrkCuts.push_back(4);
+  nTrkCuts.push_back(3);
+  nTrkCuts.push_back(4);
   nTrkCuts.push_back(5);
   //nTrkCuts.push_back(6);
   //nTrkCuts.push_back(7);
@@ -143,13 +146,14 @@ int main(int argc, char **argv) {
   nTrkColors[3] = kRed;
   nTrkColors[4] = kBlue;
   nTrkColors[5] = kBlack;
-  nTrkColors[6] = kGreen;
-  nTrkColors[7] = kGreen+3;
-  nTrkColors[8] = kCyan+2;
-  nTrkColors[10] = kBlue+3;
+  //nTrkColors[6] = kGreen;
+  //nTrkColors[7] = kGreen+3;
+  //nTrkColors[8] = kCyan+2;
+  //nTrkColors[10] = kBlue+3;
   
 
   Int_t mu_points = 2000;
+  //Float_t mu_max = 22.; //maximun value of ei_actualIntPerXing variable in the low mu sample
   Float_t mu_max = 71.; //maximun value of ei_actualIntPerXing variable in the high mu sample
 
   std::map<Int_t, TH1D*> h_NTrig_NGenInt, h_z;
@@ -205,7 +209,8 @@ int main(int argc, char **argv) {
         else{ mu_limit = 22; }
       }
     }
-    //mu_limit = 80;
+    //mu_limit = 40; // Low mu sample
+    mu_limit = 100; // Both samples
     cout << "[initializeFakeCorr] DEBUG: Restricting mu" << endl;
     cout << "mu_limit = " << mu_limit << ", mu_max = " << mu_max << endl;
     cout << "h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() = " << h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() << endl;
@@ -836,28 +841,31 @@ TCanvas* PlotNTrkGraphs(std::map<Int_t, TGraphErrors*> *graphs, TString legend_p
   Double_t ymax = -10000000;
 
   std::map<Int_t, Int_t> colors;
-  colors[0] = kBlue+3;
+  /*colors[0] = kBlue+3;
 	colors[1] = kRed;
   colors[2] = kBlue;
   colors[3] = kBlack;
   colors[4] = kGreen;
   colors[5] = kGreen+3;
   colors[6] = kCyan+2;
-  colors[7] = kYellow;
+  colors[7] = kYellow;*/
+  colors[0] = kRed;
+  colors[1] = kBlue;
+  colors[2] = kBlack;
 
 
   std::map<Int_t, Int_t> markers;
-  markers[0] = 20;
+  /*markers[0] = 20;
   markers[1] = 21;
   markers[2] = 22;
   markers[3] = 23;
   markers[4] = 24;
   markers[5] = 25;
   markers[6] = 26;
-  markers[7] = 27;
-  /*markers[0] = 7;
-  markers[1] = 7;
-  markers[2] = 7;*/
+  markers[7] = 27;*/
+  markers[0] = 8;
+  markers[1] = 8;
+  markers[2] = 8;
 
   for (std::map<Int_t, TGraphErrors*>::iterator graph = (*graphs).begin(); graph != (*graphs).end(); ++graph) {
 
@@ -946,31 +954,31 @@ TCanvas* PlotNTrkGraphs(std::map<Int_t, TH1D*> *graphs, TString legend_prefix, b
   Double_t ymax = -10000000;
 
   std::map<Int_t, Int_t> colors;
-  colors[0] = kBlue+3;
+  /*colors[0] = kBlue+3;
   colors[1] = kRed;
   colors[2] = kBlue;
   colors[3] = kBlack;
   colors[4] = kGreen;
   colors[5] = kGreen+3;
   colors[6] = kCyan+2;
-  colors[7] = kYellow;
-  /*colors[0] = kRed;
+  colors[7] = kYellow;*/
+  colors[0] = kRed;
   colors[1] = kBlue;
-  colors[2] = kBlack;*/
+  colors[2] = kBlack;
 
 
   std::map<Int_t, Int_t> markers;
-  markers[0] = 20;
+  /*markers[0] = 20;
   markers[1] = 21;
   markers[2] = 22;
   markers[3] = 23;
   markers[4] = 24;
   markers[5] = 25;
   markers[6] = 26;
-  markers[7] = 27;
-  /*markers[0] = 8;
+  markers[7] = 27;*/
+  markers[0] = 8;
   markers[1] = 8;
-  markers[2] = 8;*/
+  markers[2] = 8;
 
   for (std::map<Int_t, TH1D*>::iterator graph = (*graphs).begin(); graph != (*graphs).end(); ++graph) {
 

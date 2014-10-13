@@ -1,0 +1,47 @@
+// $Id: ConfigAccess.cxx 469517 2011-11-21 13:06:16Z krasznaa $
+
+// Local include(s):
+#include "TrigRootAnalysis/ConfigAccess.h"
+
+ClassImp( D3PD::Trig::ConfigAccess )
+
+namespace D3PD {
+
+   namespace Trig {
+
+      /**
+       * The constructor needs the configuration tree in order to create the trigger
+       * configurations service object. But it doesn't need to do anything else.
+       *
+       * @param confTree Pointer to the trigger configuration metadata tree
+       */
+      ConfigAccess::ConfigAccess( TTree* confTree )
+         : TNamed( "ConfigAccess", "Trigger configuration accessor class" ),
+           m_configSvc( confTree ) {
+
+      }
+
+      /**
+       * This function is used by the other parts of the TDT to access the trigger
+       * configuration service.
+       *
+       * @returns A reference to the trigger configuration service object
+       */
+      TrigConfigSvcD3PD& ConfigAccess::GetConfigSvc( ::Bool_t update ) {
+
+         // Try to load the appropriate configuration:
+         if( update ) {
+            if( ! m_configSvc.Load( GetSMK(), GetL1PSK(), GetHLTPSK() ) ) {
+               Error( "GetConfigSvc", "Couldn't load configuration with SMK: %i, "
+                      "L1PSK: %i, HLTPSK: %i", GetSMK(), GetL1PSK(),
+                      GetHLTPSK() );
+            }
+         }
+
+         // Even in case of an error, we should still return this object:
+         return m_configSvc;
+      }
+
+   } // namespace Trig
+
+} // namespace D3PD

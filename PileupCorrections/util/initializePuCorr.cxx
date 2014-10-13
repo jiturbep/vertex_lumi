@@ -64,16 +64,16 @@ int main(int argc, char **argv) {
   #ifdef DEBUG
   cout << "[initializePuCorr] DEBUG: Enabling debug." << endl;
   #endif
-    // --- Scan for command line parameters
+  // --- Scan for command line parameters
     
-    //Input/output detection
+  //Input/output detection
   TString tag;
   TString output_prefix;
   bool set_verbose = false;
   
-    int c;
-    extern char* optarg;
-    while (1) {
+  int c;
+  extern char* optarg;
+  while (1) {
     int option_index = 0;
     static struct option long_options[] = { 
       {"tag", required_argument, 0, 't'},
@@ -123,6 +123,9 @@ int main(int argc, char **argv) {
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_2newsets");
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax20");
   mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax75");
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_BothSamples"); //Added 03aug2014
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_LowMuSample"); //''
+  mc_8TeV_samples.push_back("mc_8TeV_17.2_VtxLumi_HighMuSample"); //''
 
   std::vector<TString> data_samples;
   data_samples.push_back("data_7TeV_17.2_normal");
@@ -148,7 +151,7 @@ int main(int argc, char **argv) {
     mc_energy = "7";
   } else if (find(mc_8TeV_samples.begin(), mc_8TeV_samples.end(), tag) != mc_8TeV_samples.end()) {
     input_type = "mc";
-    input_path = GlobalSettings::path_D3PDMCResults; input_path += tag; input_path += "/"; input_path += GlobalSettings::path_D3PDMCResults_v; input_path += "/InDetTrackD3PD_results_bothsamples.root";
+    input_path = GlobalSettings::path_D3PDMCResults; input_path += tag; input_path += "/"; input_path += GlobalSettings::path_D3PDMCResults_v; input_path += "/InDetTrackD3PD_results.root";
     mc_energy = "8";
   } else if (tag == "data_7TeV_17.2_normal") {
     input_type = "data";
@@ -165,23 +168,28 @@ int main(int argc, char **argv) {
   } else if (tag == "data_8TeV_17.2_VtxLumi_201351") {
     input_type = "data";
     data_run = "201351";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_04Aug2014.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_207216") {
     input_type = "data";
     data_run = "207216";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_207219") {
     input_type = "data";
     data_run = "207219";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_214984") {
     input_type = "data";
     data_run = "214984";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_215021") {
     input_type = "data";
     data_run = "215021";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_102.root";
   } else {
     cerr << "Input not recognized: " << tag << ". Exiting..." << endl;
     exit(1);
@@ -205,8 +213,8 @@ int main(int argc, char **argv) {
 
   std::vector<Int_t> nTrkCuts;
   //nTrkCuts.push_back(2); 
-  //nTrkCuts.push_back(3);
-  //nTrkCuts.push_back(4);
+  nTrkCuts.push_back(3);
+  nTrkCuts.push_back(4);
   nTrkCuts.push_back(5);
   //nTrkCuts.push_back(6);
   //nTrkCuts.push_back(7);
@@ -490,7 +498,6 @@ int main(int argc, char **argv) {
         f_deltaz = new TFile(path_deltaz,"RECREATE");
         h_dz->Write();
 
-
         /*TFile *f_dz = new TFile(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/dz_distribution.root"), "UPDATE");
         h_dz_copy = (TH1D*)h_dz->Clone();
         //h_dz_copy->Scale(1/h_dz_copy->Integral());
@@ -667,7 +674,10 @@ int main(int argc, char **argv) {
       TH1D *h_tmp_scaled;
       TH1D *h_tmp_copy;
       Double_t weight = 0.;
-      Double_t MaxNGenInt = h_dz_NGenInt->GetNbinsY();
+      //Double_t MaxNGenInt = h_dz_NGenInt->GetNbinsY();
+      //Double_t MaxNGenInt = 40; // MC Low Mu sample
+      Double_t MaxNGenInt = 100; // MC High Mu sample
+
       
       Float_t mu;
       if (mc_energy == "7") {
@@ -680,7 +690,7 @@ int main(int argc, char **argv) {
       f_deltaz = new TFile(path_deltaz,"RECREATE");
       cout << "[initializePuCorr] DEBUG: MaxNGenInt = " << MaxNGenInt << endl;
       //Given the statistics of the MC sample, I create the delta z distribution by adding all the delta z distributions per ngenint weigthed by their integral
-      for (Int_t current_ngenint = 2; current_ngenint < MaxNGenInt; current_ngenint++) {
+      for (Int_t current_ngenint = 2; current_ngenint < 11; current_ngenint++) {
         Int_t bin = h_dz_NGenInt->GetYaxis()->FindBin(current_ngenint);
         TString tmpname = "h_dz_NGenInt"; tmpname += current_ngenint; tmpname += "_NTrk"; tmpname += *nTrkCut;
         TH1D *h_tmp = (TH1D*)h_dz_NGenInt->ProjectionX(tmpname, bin, bin);
@@ -697,15 +707,16 @@ int main(int argc, char **argv) {
           h_dz = (TH1D*)h_tmp->Clone();
           TString name3 = "h_dz_NTrk"; name3 += *nTrkCut;
           h_dz->SetName(name3);
-          h_dz->Scale(h_tmp->Integral());
+          //h_dz->Scale(h_tmp->Integral());
           weight += h_tmp->Integral();
         } else {
-          h_dz->Add(h_tmp, h_tmp->Integral());
+          h_dz->Add(h_tmp,1);
+          //h_dz->Add(h_tmp, h_tmp->Integral());
           weight+=h_tmp->Integral();
         }
       }
 
-      h_dz->Scale(1.0/weight);
+      //h_dz->Scale(1.0/weight);
       h_dz->Scale(1./h_dz->Integral());
       h_dz->Write();
       TH1D *h_dz_copy = (TH1D*)h_dz->Clone();
@@ -764,7 +775,7 @@ int main(int argc, char **argv) {
       TFile *f_z;
       f_z = new TFile(path_z,"RECREATE");
       
-      for (Int_t current_ngenint = 1; current_ngenint < MaxNGenInt; current_ngenint++) {
+      for (Int_t current_ngenint = 1; current_ngenint < 11; current_ngenint++) {
         Float_t poisson_factor = TMath::Exp(-1. * mu) * TMath::Power(mu, current_ngenint) / TMath::Factorial(current_ngenint);
         //cout << "[INFO] Line 724, Originally, poisson factor is "<< poisson_factor << ", but I am setting it to 1" << endl;
         //poisson_factor=1;
@@ -774,15 +785,15 @@ int main(int argc, char **argv) {
         TH1D *h_tmp = (TH1D*)h_z_NGenInt->ProjectionX(tmpname, bin, bin);
         //h_tmp->Print("all");
         h_tmp->Sumw2();
-        if (current_ngenint < MaxNGenInt){
+        if (current_ngenint < 11){
           h_tmp_copy2 = (TH1D*)h_tmp->Clone();
           h_tmp_copy2->Rebin(10);
-          if (h_tmp_copy2->Integral() != 0) h_tmp_copy2->Scale(poisson_factor / h_tmp_copy2->Integral());
+          //if (h_tmp_copy2->Integral() != 0) h_tmp_copy2->Scale(poisson_factor / h_tmp_copy2->Integral());
           h_tmp_copy2->GetXaxis()->SetLimits(-200.0,200.0);
           h_tmp_copy2->Write();
         }
 
-        if (h_tmp->Integral() != 0) h_tmp->Scale(poisson_factor / h_tmp->Integral());
+        //if (h_tmp->Integral() != 0) h_tmp->Scale(poisson_factor / h_tmp->Integral());
 
         if (current_ngenint == 1) {
           TString name3 = "h_z_NTrk"; name3 += *nTrkCut;

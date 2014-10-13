@@ -112,11 +112,13 @@ int main(int argc, char **argv) {
 
   cout << "Loading TTree" << endl;
   
-  TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both.root"), "READ");
+  //TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both.root"), "READ");
   //TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both.root"), "READ");
+  TFile *f_histograms = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results.root"), "READ");
 
-  TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both_tree.root"), "READ");
+  //TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_actualXing_both_tree.root"), "READ");
   //TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_NGenInt_both_tree.root"), "READ");
+  TFile *f_counts = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/InDetTrackD3PD_results_tree.root"), "READ");
 
   TFile *f_raw = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/MCClosureTest_mumax20sample_NGenIntVsNVertices.root"), "READ");
   TFile *f_raw_1 = new TFile(TString("/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/VertexCounts/") + input_tag + TString("/17.2-VtxLumi/MCClosureTest_mumax75sample_NGenIntVsNVertices.root"), "READ");
@@ -126,9 +128,9 @@ int main(int argc, char **argv) {
   Long64_t n_entries = 100;
 
   std::vector<Int_t> nTrkCuts;
-  //nTrkCuts.push_back(3);
+  nTrkCuts.push_back(3);
   //nTrkCuts.push_back(4);
-  nTrkCuts.push_back(5);
+  //nTrkCuts.push_back(5);
 
   std::map<Int_t, Int_t> marker_styles;
   marker_styles[3] = 20;
@@ -164,7 +166,7 @@ int main(int argc, char **argv) {
   TCanvas *c_ratio_data_fit = new TCanvas("c_ratio_data_fit", "c_ratio_data_fit", 1200, 800);
 
   bool draw_first = true;
-  bool TwoFits = false;
+  bool TwoFits = true;
 
   for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 
@@ -739,7 +741,7 @@ int main(int argc, char **argv) {
     l_trkcut->AddEntry(tg_muvis_ngenint[*nTrkCut],legend_justtrakcut,"P");
     l_muinsteps->Draw("same");
     l_trkcut->Draw("same");
-    TString name = TString("") + output_prefix + TString("/Mine/c_muinsteps_ngenint_nTrkCut") ;
+    TString name = TString("") + output_prefix + TString("/c_muinsteps_ngenint_nTrkCut") ;
     name += *nTrkCut;
     c_muinsteps_ngenint->SaveAs(name+TString(".pdf"));
 
@@ -749,43 +751,43 @@ int main(int argc, char **argv) {
 
   c_nvtxrecon_ngenint->cd();
   l_nolines->Draw();
-  c_nvtxrecon_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_nvtxrecon_poissonmean.pdf"));
+  c_nvtxrecon_ngenint->SaveAs(TString("") + output_prefix + TString("/c_nvtxrecon_poissonmean.pdf"));
 
   c_comparison->cd();
   TPad *c_Pad = new TPad("grid","",0,0,1,1);
   c_Pad->SetTicks(1,1);
   c_Pad->SetGrid(1,1);
   //l_nolines->Draw();
-  c_comparison->SaveAs(TString("") + output_prefix + TString("/Mine/c_comparison.pdf"));
+  c_comparison->SaveAs(TString("") + output_prefix + TString("/c_comparison.pdf"));
 
   c_murec_ngenint->cd();
   l_nolines->Draw();
-  c_murec_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_muraw_poissonmean.pdf"));
+  c_murec_ngenint->SaveAs(TString("") + output_prefix + TString("/c_muraw_poissonmean.pdf"));
 
   c_muvis_ngenint->cd();
   l_nolines->Draw();
-  c_muvis_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_muvis_poissonmean.pdf"));
+  c_muvis_ngenint->SaveAs(TString("") + output_prefix + TString("/c_muvis_poissonmean.pdf"));
 
   c_mureal_ngenint->cd();
   l_nolines->Draw();
-  c_mureal_ngenint->SaveAs(TString("") + output_prefix + TString("/Mine/c_mureal_poissonmean.pdf"));
+  c_mureal_ngenint->SaveAs(TString("") + output_prefix + TString("/c_mureal_poissonmean.pdf"));
 
   c_ratio_murec_muvis->cd();
   l_nolines->Draw();
-  c_ratio_murec_muvis->SaveAs(TString("") + output_prefix + TString("/Mine/c_ratio_murec_muvis.pdf"));
+  c_ratio_murec_muvis->SaveAs(TString("") + output_prefix + TString("/c_ratio_murec_muvis.pdf"));
 
   c_ratio_data_fit->cd();
   //l_nolines->Draw();
-  c_ratio_data_fit->SaveAs(TString("") + output_prefix + TString("/Mine/c_ratio_data_fit.pdf"));
+  c_ratio_data_fit->SaveAs(TString("") + output_prefix + TString("/c_ratio_data_fit.pdf"));
 
 
-  TFile *outputFile_muvis = new TFile("muvis_ngenint.root","RECREATE");
+  TFile *outputFile_muvis = new TFile(TString("") + output_prefix + TString("muvis_ngenint.root"),"RECREATE");
   for (vector<TGraphErrors*>::iterator tgraph = graphs_muvis_ngenint.begin(); tgraph != graphs_muvis_ngenint.end(); ++tgraph) {
     (*tgraph)->Write();
   }
   outputFile_muvis->Close();
 
-  TFile *outputFile_murec = new TFile("murec_ngenint.root","RECREATE");
+  TFile *outputFile_murec = new TFile(TString("") + output_prefix + TString("murec_ngenint.root"),"RECREATE");
   for (vector<TGraphErrors*>::iterator tgraph = graphs_murec_ngenint.begin(); tgraph != graphs_murec_ngenint.end(); ++tgraph) {
     (*tgraph)->Write();
   }

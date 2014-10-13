@@ -1,0 +1,62 @@
+2012-02-24 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Extended Makefile.standalone to play nicely with
+	  ROOT 5.32
+	* Tagging as TrigRootAnalysis-00-00-08
+
+2011-12-01 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Updated ChainGroupHandling so that it wouldn't print an
+	  error message when somebody creates a ChainGroup before
+	  the first file is opened.
+	* Tagging as TrigRootAnalysis-00-00-07
+
+2011-11-25 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Using functions on a ChainGroup now makes sure that
+	  the correct configuration is loaded when the ChainGroup
+	  functions are evaluated. (Prescales could be wrong in
+	  the past...)
+	* Tagging as TrigRootAnalysis-00-00-06
+
+2011-11-21 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Added a parameter to GetConfigSvc(...) which can disable the
+	  auto-loading of the configuration for the current event.
+	  (When you define a new configuration tree after you opened
+	  a new file, you don't want the tool trying to access a
+	  non-existent tree in memory.)
+	* Made the functions in IDataAccess public, as these can be
+	  useful in many situations. (One couldn't use the enumeration
+	  defined in this class before this.)
+	* Tagging as TrigRootAnalysis-00-00-05
+
+2011-11-21 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Changed the code such that when the user calls the
+	  GetConfigSvc() function on the TDT, it would always be
+	  ensured to be in the correct state for the current
+	  event. (So far the higher level functions made sure
+	  one by one that the correct configuration is loaded.)
+	* Added some documentation for Doxygen.
+	* Tagging as TrigRootAnalysis-00-00-04
+
+2011-10-31 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Added a new suite of functions for listing all the triggers
+	  from an event, or from a chain group that passed in the
+	  current event. This should help in some interactive
+	  analyses, or analyses running on just a few events.
+	* TrigConfigSvcD3PD can now look up LVL1 items and HLT chains
+	  based on their CTP/Chain Id.
+	* Added some extra protection against failures in some places.
+	* Tagging as TrigRootAnalysis-00-00-03
+
+2011-09-28 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Small fix for RootCore compilation on MacOS X Lion.
+	  (libTree is somehow not loaded by default under ROOT
+	  5.30.01 there...)
+	* Tagging as TrigRootAnalysis-00-00-02
+
+2011-09-05 Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+	* Created this new package based on the ROOT-only sources
+	  that were in the TriggerD3PDMaker package so far.
+	* The code can be compiled in 3 ways at the moment:
+	  - In the Athena environment like any other CMT package
+	  - Using RootCore
+	  - Using a completely standalone Makefile
+	* Tagging as TrigRootAnalysis-00-00-01

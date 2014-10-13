@@ -17,3 +17,7 @@
 # ignore emacs tmp files
 *~
 *.txt
+# ignore libraries
+*.so
+# ignore all object files
+*.[ao]

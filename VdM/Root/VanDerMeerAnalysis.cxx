@@ -564,7 +564,8 @@ void VanDerMeerAnalysis::InitializeFakeCorrection(TString p_energy, TString p_se
   } else if (p_settings == "17.2-normal") {
     fc = new FakeCorrection("mc_8TeV_17.2_normal_pythia8_pu", p_ntrkcut); //CHANGED this to 7, it was 8 //changed back to 8
   } else if (p_settings = "17.2-VtxLumi") {
-    fc = new FakeCorrection("mc_8TeV_17.2_VtxLumi_2newsets", p_ntrkcut); //CHANGED this to 7, it was 8 // changed back to 8
+    //fc = new FakeCorrection("mc_8TeV_17.2_VtxLumi_2newsets", p_ntrkcut); //CHANGED this to 7, it was 8 // changed back to 8
+    fc = new FakeCorrection("mc_8TeV_17.2_VtxLumi_BothSamples", p_ntrkcut);
   } else {
     cerr << "Fake correction only available for r17.2 (you specified " << p_settings << "). Exiting..." << endl;
     exit(1);
@@ -1596,10 +1597,8 @@ void VanDerMeerAnalysis::FitVdmCurves() {
   cout << "max_y = " << max_y << ", MaxElement = " << TMath::MaxElement(tg_musp_y->GetN(),tg_musp_y->GetY()) << endl;
  
   ////////////////Hack for April vdM scans, excluding outermost points from the fit
-  //low_displacement = -127.0;
-  //high_displacement = 125.0;
-  //low_displacement = -50.0;
-  //high_displacement = 50.0;
+  low_displacement = -127.0;
+  high_displacement = 125.0;
 
   cout << "low_displacement = " << low_displacement << ", high_displacement = " << high_displacement << endl;
 

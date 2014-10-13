@@ -43,7 +43,9 @@ PileupMaskingCorrection::PileupMaskingCorrection(TH1D *h1, TString string1) {
   finished = false;
   max_dz = 300.;
   do_ll = true;
-  MaxNGenInt = 110;
+  MaxNGenInt = 110; //Old
+  //MaxNGenInt = 100; // High Mu sample MC
+  //MaxNGenInt = 40; //Low Mu sample MC
 
   TString hname = "h_dz";
   h_dz->SetName(hname);
@@ -134,15 +136,15 @@ void PileupMaskingCorrection::FitExcluded() {
     reject = kTRUE;
     TString fname = "fit_gaussian_excluded_";
     fname += tag;
-    /*//Temporarily changing back to always fitting with template
+    //Temporarily changing back to always fitting with template
     f_dz_excluded = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic_exclude, -1.*max_dz, max_dz, 5);
     //f_dz_excluded = new TF1(fname, fitFunc_generic_exclude, -1.*50., 50., 5);
     f_dz_excluded->SetNpx(10000);
     f_dz_excluded->SetParameter(0,h_dz_rebinned->Integral());
     f_dz_excluded->SetParLimits(0, 0., h_dz_rebinned->Integral()*100.);
     f_dz_excluded->FixParameter(1, -1.*exclude_dz);
-    f_dz_excluded->FixParameter(2, exclude_dz);*/
-    if ( (is_MC == 0) ){
+    f_dz_excluded->FixParameter(2, exclude_dz);
+    /*if ( (is_MC == 0) ){
       //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
       f_dz_excluded = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic_exclude, -1.*max_dz, max_dz, 5);
       //f_dz_excluded = new TF1(fname, fitFunc_generic_exclude, -1.*50., 50., 5);
@@ -160,7 +162,7 @@ void PileupMaskingCorrection::FitExcluded() {
       f_dz_excluded->SetParameter(1, h_dz_rebinned->GetRMS());
       f_dz_excluded->FixParameter(2, 0.);
       f_dz_excluded->SetLineColor(kRed);
-    }
+    }*/
 
     TString fit_options = "REM";
     if (do_ll) {
@@ -168,14 +170,14 @@ void PileupMaskingCorrection::FitExcluded() {
     }
     
     //Temporarily changing back to always fitting with template
-    //h_dz_rebinned->Fit(f_dz_excluded,fit_options);
-    if ( (is_MC == 0) ){
+    h_dz_rebinned->Fit(f_dz_excluded,fit_options);
+    /*if ( (is_MC == 0) ){
       //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
       h_dz_rebinned->Fit(f_dz_excluded,fit_options);
     } else {
       //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
       h_dz_rebinned->Fit(f_dz_excluded,fit_options,"",-100,-20);
-    }
+    }*/
     cout << "\t\t Excl. gaussian fit results: " << endl;
     cout << "\t\t par[0] = " << f_dz_excluded->GetParameter(0) << " +/- " << f_dz_excluded->GetParError(0) << endl;
     cout << "\t\t chi2/ndf = " << f_dz_excluded->GetChisquare() / f_dz_excluded->GetNDF() << endl;
@@ -230,10 +232,10 @@ void PileupMaskingCorrection::MakeFullGaussian() {
 
   TString fname = "fit_gaussian_full_";
   fname += tag;
-  /*//Temporarily changing back to always fitting with template
+  //Temporarily changing back to always fitting with template
   f_dz_full = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic, h_dz->GetXaxis()->GetXmin(), h_dz->GetXaxis()->GetXmax(), 1);
-  f_dz_full->SetParameter(0, f_dz_excluded->GetParameter(0) / rebin_factor);*/
-  if ( (is_MC == 0) ){
+  f_dz_full->SetParameter(0, f_dz_excluded->GetParameter(0) / rebin_factor);
+  /*if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
     f_dz_full = new TF1(fname, this, &PileupMaskingCorrection::fitFunc_generic, h_dz->GetXaxis()->GetXmin(), h_dz->GetXaxis()->GetXmax(), 1);
     f_dz_full->SetParameter(0, f_dz_excluded->GetParameter(0) / rebin_factor);
@@ -250,7 +252,7 @@ void PileupMaskingCorrection::MakeFullGaussian() {
     h_dz_random->FillRandom(fname,1000000);
     h_dz_random->Sumw2();
     cout << "h_dz_random->Integral() " << h_dz_random->Integral() << endl;
-  }
+  }*/
 }
 
 void PileupMaskingCorrection::MakeDifferentialPmask() {
@@ -372,6 +374,9 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut)
   mc_samples.push_back("mc_7TeV_17.2_normal_pythia8_pu_bs45");
   mc_samples.push_back("mc_7TeV_17.2_VtxLumi_pythia8_pu_bs45");
   mc_samples.push_back("mc_7TeV_17.2_normal_pythia8_pu_bs55");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_BothSamples");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_LowMuSample");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_HighMuSample");
 
   std::vector<TString> data_samples;
   data_samples.push_back("data_7TeV_17.2-normal");
@@ -400,7 +405,7 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut)
   } else if (p_tag == "data_8TeV_17.2-VtxLumi") {
     sample = "data_8TeV_17.2_VtxLumi";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351") {
-    sample = "data_8TeV_17.2_VtxLumi_201351";
+    sample = "data_8TeV_17.2_VtxLumi_207216"; //Use July to extract the masking correction since it doesn't work on April
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351_26Nov") {
     sample = "data_8TeV_17.2_VtxLumi_201351_26Nov";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_207216") {
@@ -418,7 +423,6 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut)
   TString path = GlobalSettings::path_maskingCorrection;
   path += "/";
   path += sample;
-  //path += "data_8TeV_17.2_VtxLumi_207216"; //trying to use July's pmask vs dz histogram for April
   path += "/pmask_cache.root";
 
   cout << "[PileupMaskingCorrection] INFO : Loading cache from " << path << endl;
@@ -783,9 +787,10 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
 
   if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
-    mumax = 40; 
+    mumax = 30; 
   } else{
     //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
+    //mumax = 22; // Maximum value of ei_actualIntPerXing for the low mu sample
     mumax = 71; // Maximum value of ei_actualIntPerXing for the high mu sample
   }
 
@@ -1115,9 +1120,10 @@ Double_t PileupMaskingCorrection::meanMuObs(Double_t x, Double_t par) {
   Double_t mu_obs = 0.;
   //Double_t MaxNGenInt = 110;
   if( (is_MC == 0) ){
-    MaxNGenInt = 40;
+    MaxNGenInt = 60;
   }else{
-    MaxNGenInt = 110;
+    //MaxNGenInt = 40; // Low mu sample
+    MaxNGenInt = 100;
   }
   //if( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;

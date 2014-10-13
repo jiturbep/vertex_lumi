@@ -178,8 +178,8 @@ int main(int argc, char **argv) {
   vector<Int_t> nTrkCuts;
   //if (vtx_method == "NEvt") nTrkCuts.push_back(2);
   //nTrkCuts.push_back(2);
-  //nTrkCuts.push_back(3);
-  //nTrkCuts.push_back(4);
+  nTrkCuts.push_back(3);
+  nTrkCuts.push_back(4);
   nTrkCuts.push_back(5);
   //nTrkCuts.push_back(6);
   //nTrkCuts.push_back(7);

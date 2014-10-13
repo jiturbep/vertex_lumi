@@ -1,0 +1,16 @@
+package TrigRootAnalysis
+author Attila Krasznahorkay <Attila.Krasznahorkay@cern.ch>
+
+# Base Gaudi/Athena package(s):
+use AtlasPolicy     AtlasPolicy-*
+
+# External package(s):
+use AtlasROOT       AtlasROOT-*       External
+
+# Compile the code into an installed library:
+library TrigRootAnalysis ../Root/*.cxx
+apply_pattern installed_library
+
+# Generate the CINT dictionaries for the classes:
+apply_pattern have_root_headers root_headers="*.h ../Root/LinkDef.h" \
+              headers_lib=TrigRootAnalysis

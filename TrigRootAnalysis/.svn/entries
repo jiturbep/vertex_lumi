@@ -1,0 +1,52 @@
+10
+
+dir
+536975
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasoff/Trigger/TrigAnalysis/TrigRootAnalysis/tags/TrigRootAnalysis-00-00-08
+svn+ssh://jiturbep@svn.cern.ch/reps/atlasoff
+
+
+
+2012-02-24T08:29:27.934189Z
+484844
+krasznaa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4525493e-7705-40b1-a816-d608a930855b
+
+Root
+dir
+
+cmt
+dir
+
+doc
+dir
+
+ChangeLog
+file
+
+
+
+
+2012-07-18T11:48:46.000000Z
+ac34d8b1ddc5d289dd7b644491bb434d
+2012-02-24T08:28:57.366334Z
+484843
+krasznaa
+
+TrigRootAnalysis
+dir
+

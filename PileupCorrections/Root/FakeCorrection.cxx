@@ -32,6 +32,8 @@ FakeCorrection::FakeCorrection(TString p_tag, Int_t p_ntrkcut) {
   known_samples.push_back("mc_8TeV_17.2_VtxLumi_2newsets_15Nov");
   known_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax20");
   known_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax75");
+  known_samples.push_back("mc_8TeV_17.2_VtxLumi_LowMuSample");
+  known_samples.push_back("mc_8TeV_17.2_VtxLumi_BothSamples");
 
   if (find(known_samples.begin(), known_samples.end(), p_tag) == known_samples.end()) {
     cerr << "[FakeCorrection] ERROR : Requested tag " << p_tag << " not recognized. Exiting..." << endl;

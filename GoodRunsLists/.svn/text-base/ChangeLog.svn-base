@@ -1,0 +1,918 @@
+2012-06-22  Karsten Koeneke  <karsten.koeneke@cern.ch>
+
+	* src/GoodRunsListSelectorTool.cxx (initialize): Use better xml-file path decoding
+	* Tagging GoodRunsLists-00-01-02
+
+2011-12-02 Emil Obreshkov <Emil.Obreshkov@cern.ch>
+	* cmt/Makefile.Standalone : preparing for ROOT change where Makefile.arch was moved into another location
+	* change is backwards compatible with previous ROOT versions
+	* Tagging GoodRunsLists-00-00-97
+
+2011-07-08 Steve Farrell <sfarrell@cern.ch>
+	* Added ../scripts/diff* to requirements file
+	* Tagging GoodRunsLists-00-00-93
+
+2011-07-05 Steve Farrell <sfarrell@cern.ch>
+	* Added script diff_goodrunslists
+	* Tagging GoodRunsLists-00-00-92
+
+2010-11-16 Max Baak <mbaak@cern.ch>
+	M Makefile.Standalone
+	* fix for standalone-compilation
+	* Tagging GoodRunsLists-00-00-91
+
+2010-11-12 Max Baak <mbaak@cern.ch>
+	M      scripts/merge_goodrunslists
+	* Merge xrootd files.
+	* Tagging GoodRunsLists-00-00-90
+
+2010-10-19 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/TGoodRunsListWriter.cxx
+	M      cmt/Makefile.Standalone
+	* Merging of GRLs no longer checks metadata, except for RQ version
+	* Tagging GoodRunsLists-00-00-87
+	M      Root/TGRLCollection.cxx
+	* GetMergedGRLCollection now _always_ returns compressed grls
+	* ... correct for LBMDTool bug
+        * Tagging GoodRunsLists-00-00-88	
+	M      Root/TGoodRun.cxx
+	* Cleanup unnecessary logger
+	M      Root/TGRLCollection.cxx
+	* GetMergedGoodRunsList() now always returns compressed grl 
+	M      Root/TGoodRunsListWriter.cxx
+	* now always write compressed grl
+        * Tagging GoodRunsLists-00-00-89	
+
+2010-09-14 Max Baak <mbaak@cern.ch>
+	M      scripts/merge_goodrunslists
+	* Default is now: merge into one output file, do not match metadata grl info
+	* Tagging GoodRunsLists-00-00-86
+
+2010-09-13 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	-apply_pattern declare_scripts files="../scripts/define* ../scripts/create* ../scripts/merge* ../scripts/verify*" 
+	+apply_pattern declare_scripts files="../scripts/define* ../scripts/create* ../scripts/merge* ../scripts/verify* ../scripts/overlap*" 
+	* install overlap_goodrunslists script.
+	* Tagging GoodRunsLists-00-00-85
+
+2010-06-29 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRun.h
+	M      GoodRunsLists/TGoodRunsList.h
+	M      GoodRunsLists/TLumiBlockRange.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/LinkDef.h
+	* Minor update to make GRL classes persistable
+	* Tagging GoodRunsLists-00-00-84
+
+2010-06-22 Max Baak <mbaak@cern.ch>
+	M      Root/TGRLCollection.cxx
+	* LB splitting across files, turn off warning when merging GRLs.
+	* Tagging GoodRunsLists-00-00-83
+
+2010-06-18 Max Baak <mbaak@cern.ch>
+	M      python/GoodRunsListTool.py
+	A      python/Wenuchannel.py
+	A      python/susy_7TeV.py
+	A      python/WZcommon.py
+	M      python/TemplateConfig
+	A      python/Zeechannel_fwd.py
+	M      cmt/Makefile.Standalone
+	M      README
+	* Added several grl configurations
+	* Standalone makefile includes root XMLparser
+	* Tagging GoodRunsLists-00-00-82
+
+2010-06-15 Max Baak <mbaak@cern.ch>
+	M      cmt/Makefile.Standalone
+	* cleanup of unneeded library dependencies for standalone compilation
+	M      Root/TGRLCollection.cxx
+	* Compress returned GRLs when asking for merged GRL collection or GRL.
+	M      Root/TGoodRunsListWriter.cxx
+	* No change here
+	M      scripts/merge_goodrunslists
+	* Now accepts D3PDs as input
+	A      scripts/overlap_goodrunslists
+	* script to take overlap between two grls
+        * Tagging GoodRunsLists-00-00-81	
+
+2010-05-17 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	* Remove statics from HasRun() and HasRunLumiBlock()
+	* Athena doesn't like it and rejects all runs!
+	M      Root/TGoodRunsListReader.cxx
+	* Turn fatal error into error error - asked by Jack C
+	* Tagging GoodRunsLists-00-00-80 
+
+2010-05-17 Max Baak <mbaak@cern.ch>
+	M      Root/TGoodRunsListReader.cxx
+	* reader::Interpret() is try safe.
+	* Tagging GoodRunsLists-00-00-79
+
+2010-05-16 Max Baak <mbaak@cern.ch>
+	M      Root/TGoodRunsListWriter.cxx
+	M      cmt/Makefile.Standalone
+	M      run/example.py
+	M      run/example.C
+	* Turn off dependency on libxml for standalone compilation
+	* Tagging GoodRunsLists-00-00-78
+
+2010-05-04 Max Baak <mbaak@cern.ch>
+	M      Root/TGoodRunsList.cxx
+	* Cache HasRunLB function 
+        * Tagging GoodRunsLists-00-00-77	
+
+2010-04-14 Max Baak <mbaak@cern.ch>
+	M      Root/TGoodRunsListReader.cxx
+	* turn of validation of xml file, needed when run query server down and dtd fiel is missing.
+	* Tagging GoodRunsLists-00-00-76
+
+2010-04-07 Max Baak <mbaak@cern.ch>
+	A      python/jetetmiss_7TeV.py
+	A      python/all_7TeV.py
+	A      python/muon_7TeV.py
+	A      python/minbias_7TeV.py
+	* grl configurations for 7 TeV
+	M      python/jetetmiss_woindet_900GeV.py
+	M      python/minbias_solon_2TeV.py
+	M      python/jetetmiss_jetmetok_woindet_900GeV.py
+	M      python/minbias_solon_windet_900GeV.py
+	M      python/jetetmiss_woindet_2TeV.py
+	M      python/jetetmiss_jetmetok_woindet_2TeV.py
+	M      python/minbias_stable_900GeV.py
+	M      python/TopMixConfig.py
+	M      python/jetetmiss_windet_900GeV.py
+	M      python/minbias_900GeV.py
+	M      python/CosmicsLumiConfig.py
+	M      python/jetetmiss_jetmetok_windet_900GeV.py
+	M      python/ExampleConfig.py
+	M      python/minbias_2TeV.py
+	M      python/muon_7TeV.py
+	M      python/minbias_solon_900GeV.py
+	M      python/minbias_windet_900GeV.py
+	* update to latest runquery syntax
+	M      python/GoodRunsListConfig.py
+	* update to latest runquery syntax
+	* Tagging GoodRunsLists-00-00-74
+	M      python/jetetmiss_7TeV.py
+	M      python/all_7TeV.py
+	M      python/muon_7TeV.py
+	M      python/minbias_7TeV.py
+	* update config files to define shiftofl#head properly
+	* Tagging GoodRunsLists-00-00-75
+
+2010-02-04 Max Baak <mbaak@cern.ch> 
+	M      cmt/Makefile.Standalone
+	* fix standalone compilation for 64b
+	* Tagging GoodRunsLists-00-00-73
+
+2010-01-28 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      Root/TGoodRunsListWriter.cxx
+	* xml2 headers moved to cxx file(s).
+	* Tagging GoodRunsLists-00-00-72
+
+2010-01-25 Max Baak <mbaak@cern.ch>
+	A         python/grl.py
+	* Script used for GRL generator
+	M      src/GoodRunsListSelectorTool.cxx
+	* expand filepath for grid-usage!
+	M      python/jetetmiss_jetmetok_woindet_900GeV.py
+	M      python/jetetmiss_jetmetok_woindet_2TeV.py
+	M      python/jetetmiss_jetmetok_windet_900GeV.py
+	* MET selection set to metcalo && METMUON
+	M      python/grl.py
+	* Tagging GoodRunsLists-00-00-71
+
+2010-01-25 Max Baak <mbaak@cern.ch>
+	M      python/jetetmiss_woindet_900GeV.py
+	M      python/minbias_solon_2TeV.py
+	M      python/jetetmiss_jetmetok_woindet_900GeV.py
+	M      python/minbias_solon_windet_900GeV.py
+	M      python/jetetmiss_woindet_2TeV.py
+	M      python/jetetmiss_jetmetok_woindet_2TeV.py
+	M      python/minbias_stable_900GeV.py
+	M      python/TemplateConfig
+	M      python/jetetmiss_windet_900GeV.py
+	M      python/minbias_900GeV.py
+	M      python/jetetmiss_jetmetok_windet_900GeV.py
+	M      python/GoodRunsListConfig.py
+	M      python/minbias_2TeV.py
+	M      python/minbias_solon_900GeV.py
+	M      python/minbias_windet_900GeV.py
+	* Added functions for GRL generator
+	* updated to Cool tag: DetStatusLBSUMM-December09-01
+        * Tagging GoodRunsLists-00-00-69
+
+2010-01-22 Max Baak <mbaak@cern.ch>
+	* GRL config files for minbias and jetetmiss
+	A      python/jetetmiss_woindet_900GeV.py
+	A      python/minbias_solon_2TeV.py
+	A      python/jetetmiss_jetmetok_woindet_900GeV.py
+	A      python/minbias_solon_windet_900GeV.py
+	A      python/jetetmiss_woindet_2TeV.py
+	A      python/jetetmiss_jetmetok_woindet_2TeV.py
+	M      python/OfficialGRLs.py
+	A      python/minbias_stable_900GeV.py
+	A      python/jetetmiss_windet_900GeV.py
+	M      python/minbias_900GeV.py
+	A      python/jetetmiss_jetmetok_windet_900GeV.py
+	M      python/GoodRunsListConfig.py
+	A      python/minbias_2TeV.py
+	A      python/minbias_solon_900GeV.py
+	A      python/minbias_windet_900GeV.py
+	* minbias and jetetmiss GRL configuration files for jetetmiss group.
+	* Tagging GoodRunsLists-00-00-68
+
+2010-01-13 Max Baak <mbaak@cern.ch>
+	* Fix crash of GRLSelectorTool when run in athena in 15.6.X
+	* Tagging GoodRunsLists-00-00-67 
+
+2010-01-08 Max Baak <mbaak@cern.ch>
+	M      src/GoodRunsListSelectorTool.cxx
+	* Warning in case requested brl and grl object are unknown.
+	* Tagging GoodRunsLists-00-00-65
+	A      GoodRunsLists/DQHelperFunctions.h
+	M      Root/LinkDef.h
+	A      Root/DQHelperFunctions.cxx
+	M      cmt/Makefile.Standalone
+	* Useful Root function for cutting on good runs & LBs in plots!
+	* Tagging GoodRunsLists-00-00-66
+
+2009-12-01 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	* Fix generation of genConf files without dual-use library setting.
+	* Tagging GoodRunsLists-00-00-62
+        * Tagging GoodRunsLists-00-00-63
+	M      cmt/requirements
+	A      run/prelim_collisions.xml
+	M      python/GoodRunsListConfig.py
+	A      run/Collisions_DQgood_runlist.xml
+	* run range starts at 141541, collisions!
+	A         run/collisions.py
+	* Tagging GoodRunsLists-00-00-64
+
+2009-12-01 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	* Get rid of dual-use library and related compilation warnings
+	* Tagging GoodRunsLists-00-00-61
+
+2009-11-27 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/RegularFormula.h
+	A      python/minbias_900GeV.py
+	M      python/OfficialGRLs.py
+	* Made minbias_900GeV the first 'official' GRL
+	M      python/GoodRunsListConfig.py
+	M      Root/RegularFormula.cxx
+	* Added minbias 900GeV GRL configuration
+	* Fix: https://savannah.cern.ch/bugs/?58819
+	* Tagging GoodRunsLists-00-00-60
+
+2009-11-22 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	* Fix checkreq errors
+	* Tagging GoodRunsLists-00-00-59
+
+2009-11-12 Max Baak <mbaak@cern.ch>
+	M      python/GoodRunsListConfig.py
+	* API change in RQT
+	* Tagging GoodRunsLists-00-00-58
+
+2009-11-04 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/TGRLCollection.cxx
+	* Big warning when merging GRLs with overlapping runs/LBs.
+	* Tagging GoodRunsLists-00-00-57
+
+2009-10-29 Max Baak <mbaak@cern.ch>
+	M      cmt/Makefile.Standalone
+	* include ROOTSYS/include in include list
+	* Tagging GoodRunsLists-00-00-56
+
+2009-10-24 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	* Fix of requirements file from Emil O.
+	* Tagging GoodRunsLists-00-00-55
+
+2009-10-24 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsList.h
+	M      python/GoodRunsListTool.py
+	M      python/TemplateConfig
+	M      python/CosmicsLumiConfig.py
+	M      python/ExampleConfig.py
+	M      python/GoodRunsListConfig.py
+	M      python/TopMixConfig.py
+	M      Root/TGoodRunsList.cxx
+	M      scripts/createall_goodrunslists
+	* Added function GetStreamList() to TGoodRunsList
+	* file prefix option added to createall_goodrunslists
+	* Tagging GoodRunsLists-00-00-53
+	M      test/GoodRunsLists_DefaultConfiguration.xml
+        * Tagging GoodRunsLists-00-00-54
+
+2009-10-23 Max Baak <mbaak@cern.ch>
+	A         cmt/Makefile.OSX
+	* Thanks to Eric Torrence
+	* Tagging GoodRunsLists-00-00-51
+	M      cmt/Makefile.Standalone
+	D      cmt/Makefile.OSX
+	* One makefile for standalone compilation
+	* Tagging GoodRunsLists-00-00-52
+
+2009-10-23 Max Baak <mbaak@cern.ch>
+	M      cmt/requirements
+	M      README
+	* Tagging GoodRunsLists-00-00-50
+
+2009-10-22 Max Baak <mbaak@cern.ch>
+	A      GoodRunsLists/TriggerRegistryTool.h
+	A      GoodRunsLists/GoodRunsListSelectorTool.h
+	A      GoodRunsLists/ITriggerRegistryTool.h
+	A      GoodRunsLists/IGoodRunsListSelectorTool.h
+	M      cmt/requirements
+	A      src
+	A      src/components
+	A      src/components/GoodRunsLists_load.cxx
+	A      src/components/GoodRunsLists_entries.cxx
+	A      src/TriggerRegistryTool.cxx
+	A      src/GoodRunsListSelectorTool.cxx
+	* Moving tools back to GooRunsLists package, these are needed by LumiBlockComps
+	* Tagging GoodRunsLists-00-00-49
+
+2009-10-21 Max Baak <mbaak@cern.ch>
+	* Moved over algs and tools to DataQuality/GoodRunsListsUser
+	* Trunk is standalone
+	* Tagging GoodRunsLists-00-00-48
+
+2009-10-21 Max Baak <mbaak@cern.ch> 
+	M      GoodRunsLists/TGoodRunsList.h
+	M      GoodRunsLists/RegularFormula.h
+	M      python/GoodRunsListTool.py
+	M      cmt/requirements
+	M      scripts/create_goodrunslist
+	A      scripts/verify_goodrunslist
+	M      scripts/merge_goodrunslists
+	* Moved create_goodrunslist and verify_goodrunslist into GoodRunsListTool.
+	* Needed for RTT job, where I wish to generate and check many xml-files in one python job
+	A         scripts/createall_goodrunslists
+	* script for creating a list of GRLs based on list of GRL configs
+	A         python/OfficialGRLs.py
+	* class that contains list of official GRL configuration
+	A      test
+	A      test/GoodRunsLists_DefaultConfiguration.xml
+	M      cmt/requirements
+	* RTT configuration file & said installation
+	* Tagging GoodRunsLists-00-00-46
+        * Tagging GoodRunsLists-00-00-47
+
+2009-10-21 Max Baak <mbaak@cern.ch>
+	M      README
+	* Update of documentation for PAT tutorial 2009-10-22
+	* Tagging GoodRunsLists-00-00-45
+
+2009-10-20 Max Baak <mbaak@cern.ch>
+	M      share/GoodRunsLists_twoSelections.py
+	M      share/GoodRunsLists_jobOptions.py
+	M      share/GoodRunsLists_oneSelection.py
+	* Use flags from recexcommon to turn on lumiblockmetadatatool
+	A      run/grl_topmix_mu.xml
+	A      run/grl_topmix_e.xml
+	A      run/blacklist.xml
+	* Whoops, forgot to add these for the tutorial 
+	* Tagging GoodRunsLists-00-00-44
+
+2009-10-19 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/GRLTriggerSelectorAlg.h
+	M      GoodRunsLists/TriggerSelectorAlg.h
+	M      src/TriggerSelectorAlg.cxx
+	M      src/GRLTriggerSelectorAlg.cxx
+	* New option "TriggerSelectionRegistration", to register a trigger selection, 
+	* but not actuall apply it.
+	A      share/GoodRunsLists_preEventSelector.py
+	D      share/GoodRunsLists_jobFragment.py
+	D      share/GoodRunsLists_twoFinalStatesANDTriggers.py
+	A      share/GoodRunsLists_twoSelections.py
+	A      share/GoodRunsLists_coolQuery.py
+	D      share/GoodRunsLists_jobOptionsCool.py
+	M      share/GoodRunsLists_jobOptions.py
+	A      share/GoodRunsLists_oneSelection.py
+	A      run/lumi_files
+	A      run/lumi_files/luminosity_grl_108175.806-108175.867.xml
+	A      run/lumi_files/luminosity_grl_108175.870-108175.929.xml
+	D      run/luminosity.xml
+	* Cleanup of jOs for tutorial
+	* Tagging GoodRunsLists-00-00-43
+
+2009-10-19 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/GRLTriggerSelectorAlg.h
+	M      GoodRunsLists/StrUtil.h
+	M      Root/TGoodRunsListReader.cxx
+	A      Root/StrUtil.cxx
+	M      cmt/Makefile.Standalone
+	D      src/StrUtil.cxx
+	M      src/GoodRunsListSelectorTool.cxx
+	M      src/GRLTriggerSelectorAlg.cxx
+	* Move StrUtil to Root directory, needed by standalone library. 
+	* Tagging GoodRunsLists-00-00-42
+
+2009-10-14 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRun.h
+	M      Root/TGoodRun.cxx
+	* Functionality to compress goodrun. 
+	* Functionality to add lbs.
+	M      GoodRunsLists/TGoodRunsList.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/TGRLCollection.cxx
+	* Tools for taking the overlapvec between a grlcollection and a grl
+	M      python/TemplateConfig
+	M      python/ExampleConfig.py
+	M      python/GoodRunsListConfig.py
+	M      share/GoodRunsLists_jobOptions.py
+	M      run/LumiRangeCollectionA.xml
+	M      run/example.py
+	M      scripts/create_goodrunslist
+	A         python/CosmicsLumiConfig.py
+	* Updates for tutorial
+	M      python/CosmicsLumiConfig.py
+	M      python/TopMixConfig.py
+	A      run/cosmics.py
+	* More updates for tutorial
+	A      run/Cosmics_ProcessedLBsNoDQSelection.xml
+        * Tagging GoodRunsLists-00-00-40
+
+2009-10-12 Max Baak <mbaak@cern.ch>
+        M      src/GoodRunsListSelectorAlg.cxx
+        M      src/TriggerSelectorAlg.cxx
+        M      src/GRLTriggerSelectorAlg.cxx
+        * Change of default registration names to 'sequence'
+        M      Root/TGoodRunsListWriter.cxx
+        * GetXMLString() is empty when empty grl coll given
+        M      GoodRunsLists/GoodRunsListSelectorTool.h
+        M      src/GoodRunsListSelectorTool.cxx
+        * Return of flag to reject black runs in only eventselector mode
+        M      scripts/merge_goodrunslists
+        * Now can xml strings in root files as well!
+        M      GoodRunsLists/TGoodRunsList.h
+        M      GoodRunsLists/RegularFormula.h
+        M      Root/RegularFormula.cxx
+        M      cmt/requirements
+        * Fixes for gcc43, 64b compilation, thanks to David Q.
+        * Tagging GoodRunsLists-00-00-39
+
+
+2009-10-10 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      Root/TGoodRunsListWriter.cxx
+        * Tagging GoodRunsLists-00-00-38
+
+2009-10-09 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      Root/TGoodRunsListReader.cxx
+	* can now parse set of xmlstrings
+	M      run/example.C
+	* more examples
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      Root/TGoodRunsListWriter.cxx
+	* feature to set nameprefix. Smarter outputnames for WriteXMLFiles().
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGRLCollection.cxx
+	* SetVerion and SetMetaData functions
+	M      scripts/merge_goodrunslists
+	* Change of default merge settings
+        * Tagging GoodRunsLists-00-00-37        
+
+2009-10-07 Max Baak <mbaak@cern.ch>
+	A      GoodRunsLists/TriggerRegistryTool.h
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	A      GoodRunsLists/GRLTriggerSelectorAlg.h
+	A      GoodRunsLists/ITriggerRegistryTool.h
+	M      GoodRunsLists/TriggerSelectorAlg.h
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	M      src/TriggerSelectorAlg.cxx
+	A      src/TriggerRegistryTool.cxx
+	A      src/GRLTriggerSelectorAlg.cxx
+	* Combined GRL trigger selector
+	* Trigger registration tool
+	A      GoodRunsLists/TUniqueGRLString.h
+	M      Root/LinkDef.h
+	A      Root/TUniqueGRLString.cxx
+	M      cmt/Makefile.Standalone
+	* Singleton TString class containing xmlstring of interest
+	M      src/components/GoodRunsLists_entries.cxx
+	* Forgot to register new tool
+	* Tagging GoodRunsLists-00-00-36	
+
+2009-10-06 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      GoodRunsLists/TGoodRunsList.h
+	M      GoodRunsLists/IGoodRunsListSelectorTool.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/TGRLCollection.cxx
+	M      src/GoodRunsListSelectorTool.cxx
+	* Reject BRL flag has become redundant
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      share/GoodRunsLists_jobOptions.py
+	M      src/GoodRunsListSelectorTool.cxx
+	* Unique grl selector name registered
+	M      src/GoodRunsListSelectorAlg.cxx
+        * Tagging GoodRunsLists-00-00-35
+ 
+
+
+2009-10-06 Max Baak <mbaak@cern.ch>
+	A      share/GoodRunsLists_twoFinalStatesANDTriggers.py
+	M      share/GoodRunsLists_jobOptions.py
+	* Fix RegularExpression
+	M      GoodRunsLists/RegularFormula.h
+	M      GoodRunsLists/TriggerSelectorAlg.h
+	M      share/GoodRunsLists_jobOptionsCool.py
+	M      Root/RegularFormula.cxx
+	M      src/TriggerSelectorAlg.cxx
+	* 
+	M      share/GoodRunsLists_jobOptionsCool.py
+	M      share/GoodRunsLists_jobOptions.py
+	A      run/luminosity.xml
+	A      run/topmix.def
+	M      src/GoodRunsListSelectorTool.cxx
+	* Cleanup, helpful output
+        * Tagging GoodRunsLists-00-00-33
+	M      share/GoodRunsLists_twoFinalStatesANDTriggers.py
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/TriggerSelectorAlg.cxx
+	M      ChangeLog
+	* Tagging GoodRunsLists-00-00-34 
+
+2009-10-05 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/RegularFormula.h
+	A      GoodRunsLists/TriggerSelectorAlg.h
+	M      Root/RegularFormula.cxx
+	M      cmt/requirements
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	A      src/TriggerSelectorAlg.cxx
+	* Addition of triggerselectoralg
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      GoodRunsLists/IGoodRunsListSelectorTool.h
+	M      src/GoodRunsListSelectorTool.cxx
+	* Fix to dual-use tool
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      GoodRunsLists/IGoodRunsListSelectorTool.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGRLCollection.cxx
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/TriggerSelectorAlg.cxx
+	* Fix dual-use tool
+	M      GoodRunsLists/GoodRunsListSelectorAlg.h
+	M      GoodRunsLists/TriggerSelectorAlg.h
+	M      Root/RegularFormula.cxx
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	M      src/TriggerSelectorAlg.cxx
+	* Fix TriggerSelectorAlg
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      Root/TGoodRunsListWriter.cxx
+	M      scripts/merge_goodrunslists
+	* merging can now seperate output files
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      src/GoodRunsListSelectorTool.cxx
+	* runrange expression for cool query
+        * Tagging GoodRunsLists-00-00-32
+
+2009-10-04 Max Baak <mbaak@cern.ch>
+	A      GoodRunsLists/RegularFormula.h
+	M      Root/LinkDef.h
+	A      Root/RegularFormula.cxx
+	M      cmt/Makefile.Standalone
+	* TFormula accepting regular expressions with unknown parameters.
+
+2009-10-01 Max Baak <mbaak@cern.ch> 
+	M      python/TemplateConfig
+	M      python/GoodRunsListConfig.py
+	* Option to set name to GRL object
+	M      Root/TGoodRunsList.cxx
+	* Debug warnings
+	M      Root/TGRLCollection.cxx
+	* Fix GetMergedGRLCollection()
+	M      run/LumiRangeCollectionA.xml
+	* Change version numbers
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGoodRunsListReader.cxx
+	M      Root/TGRLCollection.cxx
+	M      Root/TGoodRunsListWriter.cxx
+	M      run/example.py
+	M      run/example.C
+	M      src/GoodRunsListSelectorTool.cxx
+	* Changed name of GetGoodRunsList() function to GetMergedGoodRunsList() 
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      GoodRunsLists/IGoodRunsListSelectorTool.h
+	M      GoodRunsLists/TGRLCollection.h
+	M      Root/TGRLCollection.cxx
+	M      src/GoodRunsListSelectorTool.cxx
+	* Change back to pre-event selector tool
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	M      GoodRunsLists/GoodRunsListSelectorAlg.h
+	M      GoodRunsLists/IGoodRunsListSelectorTool.h
+	* Algorithm accepts given grl and brl names
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/GoodRunsListSelectorTool.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	
+
+2009-09-29 Max Baak <mbaak@cern.ch>
+	M      python/GoodRunsListConfig.py
+	* Turn off requirements on mag.field for now -> this crashes in 15.5.0
+	* Fixed in nightly by J. Stelzer
+	* Tagging GoodRunsLists-00-00-29 
+	M      Root/TGRLCollection.cxx
+	* Default check version & metadata set to false
+	* Tagging GoodRunsLists-00-00-30
+	M      scripts/merge_goodrunslists
+	M      src/GoodRunsListSelectorTool.cxx
+	* Fix pass through, it was always set to true
+        * Tagging GoodRunsLists-00-00-31
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/TGoodRunsListWriter.cxx
+
+
+2009-09-29 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsListReader.h
+	A      GoodRunsLists/TGRLCollection.h
+	M      python/GoodRunsListConfig.py
+	M      Root/LinkDef.h
+	M      Root/TGoodRunsListReader.cxx
+	A      Root/TGRLCollection.cxx
+	M      cmt/Makefile.Standalone
+	M      scripts/definenew_goodrunslist
+	* Addition of TGRLCollection
+	M      src/GoodRunsListSelectorTool.cxx
+	* Pass-through = true by default
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      GoodRunsLists/TGRLCollection.h
+	* Check version&metadata set to false
+	M      GoodRunsLists/TGoodRunsListWriter.h
+	M      Root/TGoodRunsListWriter.cxx
+	* Possible to write out TGRLCollection
+	M      scripts/create_goodrunslist
+	* move Lumi.xml to correct filename
+	M      cmt/requirements
+	A      scripts/merge_goodrunslists
+	* script for merging xml files
+        * Tagging GoodRunsLists-00-00-27
+	
+
+2009-09-28 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/GoodRunsListSelectorAlg.h
+	M      share/GoodRunsLists_jobOptions.py
+	M      src/GoodRunsListSelectorAlg.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	* 
+	M      Root/TGoodRunsListWriter.cxx
+	* Some more printout
+
+2009-09-25 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/GoodRunsListSelectorTool.h
+	A      GoodRunsLists/GoodRunsListSelectorAlg.h
+	A      GoodRunsLists/IGoodRunsListSelectorTool.h
+	A      src/GoodRunsListSelectorAlg.cxx
+	M      src/components/GoodRunsLists_entries.cxx
+	M      src/GoodRunsListSelectorTool.cxx
+	* Requested change to GoodRunsListSelectorTool
+
+2009-09-22 Max Baak <mbaak@cern.ch>
+	* Changes for upcoming tutorial
+	A         GoodRunsLists/TGoodRunsListWriter.h
+	A         Root/TGoodRunsListWriter.cxx
+	M      GoodRunsLists/TGoodRunsList.h
+	M      GoodRunsLists/TGoodRun.h
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      Root/TGoodRunsList.cxx
+	M      Root/LinkDef.h
+	M      Root/TGoodRun.cxx
+	M      Root/TGoodRunsListReader.cxx
+	M      cmt/requirements
+	M      cmt/Makefile.Standalone
+	M      run/example.py
+	M      run/example.C
+	* More changes
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	M      run/example.py
+
+
+2009-09-02 Max Baak <mbaak@cern.ch>
+	* The following are (minor) cosmetic updates for a SUSY presentation ...
+	M      python/TopMixConfig.py
+	D      scripts/create_goodrunslist
+	* Move wrapper- to create- script 
+	A      scripts/create_goodrunslist
+	D      scripts/wrapper_goodrunslist
+	* Tagging GoodRunsLists-00-00-23
+	M      python/TopMixConfig.py
+	M      Root/LinkDef.h
+	* Tagging GoodRunsLists-00-00-24
+	M      python/GoodRunsListConfig.py
+	M      share/GoodRunsLists_jobOptionsCool.py
+	M      share/GoodRunsLists_jobOptions.py
+	* Change default example to TopMix sample.
+	* Tagging GoodRunsLists-00-00-25
+	M      python/TemplateConfig
+	M      share/GoodRunsLists_jobFragment.py
+	* Tagging GoodRunsLists-00-00-26
+
+2009-06-29 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsList.h
+	M      Root/TGoodRunsList.cxx
+	* Request from Akira
+	* Tagging GoodRunsLists-00-00-22
+
+2009-06-15 Max Baak <mbaak@cern.ch>
+	M      GoodRunsLists/TGoodRunsListReader.h
+	M      Root/TGoodRunsListReader.cxx
+	M      run/example.C
+	* TGoodRunsListReader now accepts TString instead of xmlfile.
+	* Tagging GoodRunsLists-00-00-21
+
+2009-06-15 Max Baak <mbaak@cern.ch>
+	M      python/TemplateConfig
+	M      python/ExampleConfig.py
+	M      python/GoodRunsListConfig.py
+	A      python/TopMixConfig.py
+	* AtlRunQuery now accepts db, conditionstag
+	* Example for topmix sample
+	* Tagging GoodRunsLists-00-00-20
+
+2009-06-12 Max Baak <mbaak@cern.ch>
+	M      python/GoodRunsListTool.py
+	M      scripts/definenew_goodrunslist
+	* Feedback from Akira. Made usage more user-friendly.
+        A      share/GoodRunsLists_jobOptionsCool.py
+        M      src/GoodRunsListSelectorTool.cxx
+	* Working joboptions file for COOL
+	* Tagging GoodRunsLists-00-00-19
+	
+2009-05-27 Max Baak <mbaak@cern.ch>
+	M      scripts/create_goodrunslist
+	A      scripts/create_goodrunslist.py
+	* Added script that sets all AtlRunQuery links correctly to work in 15.1.0
+	* Tagging GoodRunsLists-00-00-16
+	M      cmt/requirements
+	M      scripts/create_goodrunslist
+	D      scripts/create_goodrunslist.py
+	A      scripts/wrapper_goodrunslist
+	* Correct calling of AtlRunQuery
+	M      share/GoodRunsLists_jobFragment.py
+	M      share/GoodRunsLists_jobOptions.py
+	* Cleanup for documentation
+	* Tagging GoodRunsLists-00-00-18
+
+2009-05-26 Max Baak <mbaak@cern.ch>
+	M      share/GoodRunsLists_jobFragment.py
+	* example to set cool tag
+	M      cmt/requirements
+	* Cleanup
+	M      src/GoodRunsListSelectorTool.cxx
+	* Revert to original setup
+	* Tagging GoodRunsLists-00-00-15
+
+2009-05-26 Max Baak <mbaak@cern.ch>
+	A      share/GoodRunsLists_jobFragment.py
+	M      src/GoodRunsListSelectorTool.cxx
+	* Move DetStatusSvc retrieval to execute()
+	* Tagging GoodRunsLists-00-00-14
+
+2009-05-14 Max Baak <mbaak@cern.ch>
+	M GoodRunsLists/GoodRunsListSelectorTool.h
+	A GoodRunsLists/StrUtil.h
+	M cmt/requirements
+	M python/GoodRunsListConfig.py
+	M share/GoodRunsLists_jobOptions.py
+	M src/GoodRunsListSelectorTool.cxx
+	A src/StrUtil.cxx
+	M GoodRunsLists/GoodRunsListSelectorTool.h
+	M python/ExampleConfig.py
+	M python/GoodRunsListConfig.py
+	M src/GoodRunsListSelectorTool.cxx
+	* Option to select dqflags based in info in cool
+	* Tagging GoodRunsLists-00-00-12	
+	M share/GoodRunsLists_jobOptions.py
+	M src/GoodRunsListSelectorTool.cxx
+	M src/StrUtil.cxx
+	* small bugfixes
+	* Tagging GoodRunsLists-00-00-13
+
+2009-05-14 Max Baak <mbaak@cern.ch>
+	M GoodRunsLists/TGoodRun.h
+	M GoodRunsLists/TLumiBlockRange.h
+	M Root/TMsgLogger.cxx
+	* Fix compilation under gcc4.3
+        * Tagging GoodRunsLists-00-00-08
+	* Update documentation
+	* Tagging GoodRunsLists-00-00-09
+	M python/TemplateConfig
+	* set correct filename
+	M run/example.py
+	M run/example.C
+	* updated examples
+	M python/GoodRunsListConfig.py
+	* filenametag -> projecttag
+	* Tagging GoodRunsLists-00-00-10
+	M Root/TGoodRun.cxx
+	* Fix possibility to return non-empty overlap run when two runnumber are not the same.
+	M python/ExampleConfig.py
+	* Add nametag
+        * Tagging GoodRunsLists-00-00-11
+
+2009-05-13 Max Baak <mbaak@cern.ch>
+	M python/ExampleConfig.py
+	M python/GoodRunsListConfig.py
+	A scripts/create_goodrunslist
+	A scripts/definenew_goodrunslist
+	R scripts/make_grlbs_definition
+	* script to call atlrunquery
+	M GoodRunsLists/TGoodRunsList.h
+	M Root/TGoodRunsList.cxx
+	* Option to return vector with selected runnumbers
+	M cmt/requirements
+	M scripts/create_goodrunslist
+	M scripts/definenew_goodrunslist
+	* proper installation of scripts
+	M python/ExampleConfig.py
+	M python/GoodRunsListConfig.py
+	A python/GoodRunsListTool.py
+	A python/TemplateConfig
+	* Working goodrunslist examples
+	M GoodRunsLists/GoodRunsListSelectorTool.h
+	M src/GoodRunsListSelectorTool.cxx
+	* Option to pass vector of DQFlagsQuery strings
+	* Tagging GoodRunsLists-00-00-05
+	* Documentation updates
+	* Tagging GoodRunsLists-00-00-06
+	A run/example.C
+	A run/example.py
+	R run/test.C
+	R run/test.py
+	* Further cleanup
+	* Tagging GoodRunsLists-00-00-07
+
+2009-05-13 Max Baak <mbaak@cern.ch>
+	M GoodRunsLists/GoodRunsListSelectorTool.h
+	M Root/TGoodRunsList.cxx
+	A run/TTbarBlackRunsList.xml
+	A run/TTbarGoodRunsList.xml
+	M share/GoodRunsLists_jobOptions.py
+	M src/GoodRunsListSelectorTool.cxx
+	* Working version of GoodRunsListSelectorTool !
+	* Tagging GoodRunsLists-00-00-04
+
+2009-05-13 Max Baak <mbaak@cern.ch>
+	M GoodRunsLists/GoodRunsListSelectorTool.h
+	M cmt/Makefile.Standalone
+	A share/GoodRunsLists_jobOptions.py
+	M src/GoodRunsListSelectorTool.cxx
+	* Attempt to use the selectortool by the eventselector
+
+2009-05-12  Max Baak  <mbaak@cern.ch>
+	M cmt/requirements
+	M run/test.C
+	M run/test.py
+	* Switch to dual-use libraries for use in athena and root.
+	* Tagging GoodRunsLists-00-00-03
+
+2009-05-12  Max Baak  <mbaak@cern.ch>
+	A GoodRunsLists/GoodRunsListSelectorTool.h
+	M GoodRunsLists/TGoodRunsListReader.h
+	M GoodRunsLists/TMsgLogger.h
+	M Root/TGoodRunsListReader.cxx
+	M cmt/requirements
+	M python/ExampleConfig.py
+	R python/GRLBsConfig.py
+	A python/GoodRunsListConfig.py
+	A src/GoodRunsListSelectorTool.cxx
+	A src/components/GoodRunsLists_entries.cxx
+	A src/components/GoodRunsLists_load.cxx
+	* Added AlgTool for selecting lumiblocks at eventselector level.
+	* Tagging GoodRunsLists-00-00-02
+
+2009-05-11  Max Baak  <mbaak@cern.ch>
+	M README
+	M Root/LinkDef.h
+	A run/test.py
+        * Added python test example
+	M run/test.C
+	* Added some documentation lines
+	* Tagging GoodRunsLists-00-00-01
+
+2009-05-11  Max Baak  <mbaak@cern.ch>
+	* Importing test GoodRunsLists package
+	* Creating new package GoodRunsLists-00-00-00
