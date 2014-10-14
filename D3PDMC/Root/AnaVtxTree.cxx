@@ -33,6 +33,7 @@ AnaVtxTree::AnaVtxTree() : VtxTree() {
   VtxEffCriteriaT = 5; //5 sigma
   debugLevel = 0;
   SetQualityVertexVersion("1.0.2"); // Default: Tagged vertex with >= 2 tracks
+  //SetQualityVertexVersion("1.1.5"); // 
   cfgMaxDistance = 5.0;
   cfgMetric = VtxDistM_deltaZsig;
   vtxTMWThreshold = 0.7;
@@ -45,14 +46,14 @@ AnaVtxTree::AnaVtxTree() : VtxTree() {
   muFilter_min = -1; //disabled
   muFilter_max = -1; //disabled
 
-  nTrkCuts.push_back(2);
+  //nTrkCuts.push_back(2);
   nTrkCuts.push_back(3);
   nTrkCuts.push_back(4);
   nTrkCuts.push_back(5);
-  nTrkCuts.push_back(6);
-  nTrkCuts.push_back(7);
-  nTrkCuts.push_back(8);
-  nTrkCuts.push_back(10);
+  //nTrkCuts.push_back(6);
+  //nTrkCuts.push_back(7);
+  //nTrkCuts.push_back(8);
+  //nTrkCuts.push_back(10);
 
   dzsig_max = 0.; // 0 = no cut
   max_chi2ndf = -1.; // -1 = no cut
@@ -79,7 +80,8 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
   // --- Create histograms
   h_NTrig_NGenInt = HistogramHelper::defineHistogram("NTrig vs. NGenInt", MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "NGenInt", "NTrig", true, "h_NTrig_NGenInt");
 
-  h_NGenInt_mu = HistogramHelper::define2DHistogram("NGenInt vs. mu", MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "NGenInt", "#mu", true, "h_NGenInt_mu");
+  h_actualInt_NGenInt = HistogramHelper::define2DHistogram("actualInt vs. NGenInt", MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "actualInt","NGenInt", true, "h_actualInt_NGenInt");
+  h_actualInt_mcvtxn = HistogramHelper::define2DHistogram("actualInt vs. mcvtx_n", MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "actualInt","mcvtx_n", true, "h_actualInt_mcvtx_n");
 
   for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 
@@ -127,6 +129,12 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
     htitle = "Total number of reconstructed vertices vs. NGenInt";
     htitle += title_tag;
     h_all_NGenInt[*nTrkCut] = HistogramHelper::defineHistogram(htitle, MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "NGenInt", "All Vertices", true, hname);
+
+    hname = "h_all_actualInt";
+    hname += name_tag;
+    htitle = "Total number of reconstructed vertices vs. ei_actualIntPerXing";
+    htitle += title_tag;
+    h_all_actualInt[*nTrkCut] = HistogramHelper::defineHistogram(htitle, MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, "ei_actualIntPerXing", "All Vertices", true, hname);
 
     hname = "h_all_dz_NGenInt";
     hname += name_tag;
@@ -217,8 +225,6 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
     htitle = "Events with at least one vertex vs. NVtxRecon";
     htitle += title_tag;
     h_event_contains_any_NVtxRecon[*nTrkCut] = HistogramHelper::defineHistogram(htitle, MaxNVtxRecon + 1, -0.5, MaxNVtxRecon + 0.5, "NVtxRecon", "Events", true, hname);
-
-
 
   }
 
@@ -597,13 +603,89 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
     htitle += title_tag;
     h_real_sumPt[*nTrkCut] = HistogramHelper::defineHistogram(htitle,
                              1000, 0., 500000., "#Sigma p_{T}", "", true, hname);
+
+    hname = "h_GoodVertices_actualInt";
+    hname += name_tag;
+    htitle = "Good Vertices vs actualIntPerXing with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_actualInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "ei_actualIntPerXing", "GoodVertices", true, hname);
+
+    hname = "h_GoodVertices_actualInt_2D";
+    hname += name_tag;
+    htitle = "Good Vertices vs actualIntPerXing with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_actualInt_2D[*nTrkCut] = HistogramHelper::define2DHistogram(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 50, 0., 50., "ei_actualIntPerXing", "GoodVertices", true, hname);
+
+    hname = "h_GoodVertices_NGenInt";
+    hname += name_tag;
+    htitle = "Good Vertices vs NGenInt with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_NGenInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "NGenInt", "GoodVertices", true, hname);
+
+    hname = "h_GoodVertices_NGenInt_2D";
+    hname += name_tag;
+    htitle = "Good Vertices vs NGenInt with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_NGenInt_2D[*nTrkCut] = HistogramHelper::define2DHistogram(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 50, 0., 50., "NGenInt", "GoodVertices", true, hname);
+
+    hname = "h_GoodVertices_mcvtxn";
+    hname += name_tag;
+    htitle = "Good Vertices vs mcvtx_n with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_mcvtxn[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "mcvtx_n", "GoodVertices", true, hname);
+
+    hname = "h_GoodVertices_mcvtxn_2D";
+    hname += name_tag;
+    htitle = "Good Vertices vs mcvtx_n with NTracks > ";
+    htitle += title_tag;
+    h_GoodVertices_mcvtxn_2D[*nTrkCut] = HistogramHelper::define2DHistogram(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 50, 0., 50., "mcvtx_n", "GoodVertices", true, hname);
+
+    hname = "h_NVtxRecon_actualInt";
+    hname += name_tag;
+    htitle = "Reconstructed Vertices vs actualIntPerXing ";
+    htitle += title_tag;
+    h_NVtxRecon_actualInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "ei_actualIntPerXing", "NVtxRecon", true, hname);
+
+    hname = "h_NVtxRecon_NGenInt";
+    hname += name_tag;
+    htitle = "Reconstructed Vertices vs NGenInt";
+    htitle += title_tag;
+    h_NVtxRecon_NGenInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "NGenInt", "NVtxRecon", true, hname);
+
+    hname = "h_NReal_actualInt";
+    hname += name_tag;
+    htitle = "Real Reconstructed Vertices vs actualIntPerXing ";
+    htitle += title_tag;
+    h_NReal_actualInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "ei_actualIntPerXing", "NReal", true, hname);
+
+    hname = "h_NReal_NGenInt";
+    hname += name_tag;
+    htitle = "Real Reconstructed Vertices vs NGenInt";
+    htitle += title_tag;
+    h_NReal_NGenInt[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "NGenInt", "NReal", true, hname);
+
+    hname = "h_NReal_NVtxRecon";
+    hname += name_tag;
+    htitle = "Real Reconstructed Vertices vs Reconstructed Vertices";
+    htitle += title_tag;
+    h_NReal_NVtxRecon[*nTrkCut] = HistogramHelper::defineProfile(htitle,
+                              MaxNGenInt + 1, -0.5, MaxNGenInt + 0.5, 0., 50., "NVtxRecon", "NReal", true, hname);
+
   }
 
   h_truth_x = HistogramHelper::defineHistogram("Truth vertex X position", NBinsXAxis, LowXAxis, HighXAxis, "x (mm)", true, "h_truth_x");
   h_truth_y = HistogramHelper::defineHistogram("Truth vertex Y position", NBinsYAxis, LowYAxis, HighYAxis, "y (mm)", true, "h_truth_y");
   h_truth_z = HistogramHelper::defineHistogram("Truth vertex Z position", NBinsZAxis, LowZAxis, HighZAxis, "z (mm)", true, "h_truth_z");
-
-
 
   //True Matched vertex information: vertex->tracks->mcpart->mcvtx matching
   h_TM_goodUnmatched_pt = HistogramHelper::defineHistogram("P_{T} of matched tracks (prob > 0.7) with no gen particle saved.",
@@ -646,7 +728,6 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
   h_TM_fakeRelWeight = HistogramHelper::defineHistogram("Relative fake component in reconstructed vertices",
                                        100, 0, 1., "Relative FAKE Weight", "Entries",
                                        true, "TMfakeRelWeight");
-
 
   // Old matching (distance gen-reco)
   for (int nv=0; nv<VtxZM_NMatch; nv++) {
@@ -714,8 +795,6 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
   h_TM_class_pu->GetXaxis()->SetBinLabel(4, "Split");
   h_TM_class_pu->GetXaxis()->SetBinLabel(5, "ERRORS");
 
-
-
   //Init counters
   m_TotEvents = 0;
   m_TotRawEvents = 0;
@@ -749,6 +828,7 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
   m_VtxTagPurSelEffErr = 0.0;
   m_VtxTagZSelGenAnyEff=0.0;
   m_VtxTagZSelGenAnyEffErr=0.0;
+  
   for (unsigned int tveff = 0; tveff < TagVtxNumTypes; tveff++) {
     m_VtxTagThreshold[tveff] = 0;
     m_VtxTagTSelEff[tveff].SetValue(0.0,0.0);
@@ -766,19 +846,17 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
   //Display settings
   cout << "[AnaVtxTree] Quality Vertex version: "
        << GetQualityVertexVersion(0) <<"." << GetQualityVertexVersion(1) <<"." << GetQualityVertexVersion(2) << std::endl;
-#ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   cout << "[AnaVtxTree] Working in MC mode: truth quantities calculated." << endl;
   cout << "[AnaVtxTree] Selection efficiency max Z distance: " << VtxEffCriteriaZ << " mm" << std::endl;
   cout << "[AnaVtxTree] Selection efficiency max T distance: " << VtxEffCriteriaT << " (sigma)" << std::endl;
-#endif
+  #endif
   cout << "[AnaVtxTree] Trigger filter:" << triggerName << endl;
   cout << "[AnaVtxTree] actualIntPerXing filter: " << muFilter_min << " to " << muFilter_max << endl;
 
   //Open output file
   outputNtp = TFile::Open((outputFileName + TString(".root")), "RECREATE");
-
 }
-
 
 Bool_t AnaVtxTree::Process(Long64_t entry) {
 
@@ -848,8 +926,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   */
 
   ++m_TotEvents;
-
-  h_NGenInt_mu->Fill(ei_actualIntPerXing, (skip_hs ? mcvtx_n - 1 : mcvtx_n));
+  h_actualInt_mcvtxn->Fill(ei_actualIntPerXing, (skip_hs ? mcvtx_n - 1 : mcvtx_n));
 
   // --- Simulated Primary vertex
   Int_t simVtxPriIndex=0; // ALWAYS it's the first vertex
@@ -857,6 +934,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   Int_t TagVtxIndex=0; //Tagged vertex, can change depending on quality requirements
 
   // --- Check if tagged vertex exists and has meaningful errors (dummy vertex always stored!)
+  //cout << "[AnaVtxTree] Calling isGoodVertex on line 871" << endl;
   TagVtxIndex = isGoodVertex();
 
   Int_t NGoodRecoVertices=0;
@@ -864,13 +942,10 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
     if (isGoodVertex(nv) == nv) {
       NGoodRecoVertices++;
     }
-
-
   // --- Fill simple ones..
   m_VtxRec += (NGoodRecoVertices);
 
-
-   #ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   //As first thing, run truth matching algorithms
   // New Truth-Matching
   //===================
@@ -890,7 +965,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   TmVtxNBc.SetVtxMatchWeight(vtxTMWThreshold);
   TmVtxNBc.SetVtxStoreWeight(vtxTMWThresholdStore);
   TmVtxNBc.SetGenVertexRequirementVersion(1); //in-time pile-up vertices
-  //  TmVtxNBc.SetGenVertexRequirementVersion(2);
+  //TmVtxNBc.SetGenVertexRequirementVersion(2);
   //set inputs
   TmVtxNBc.SetRecoVtxInfo(vxnbc_n,
                           vxnbc_trk_n, vxnbc_trk_weight, vxnbc_trk_index,
@@ -906,8 +981,37 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
                          mcvtx_x, mcvtx_y, mcvtx_z);
   TmVtxNBc.SetGenEventsInfo(mcevt_n, mcevt_pileUpType, mcevt_nparticle);
 
+  //Sanity check
+  //cout << "[AnaVtxTree] Calling isGoodGenVertex on line 959 " << endl;
+  /*for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
+    Int_t GoodVertices = 0;
+    for (int gvtx=0; gvtx < mcvtx_n; gvtx++){
+      //cout << "[AnaVtxTree] Sanity check for track cut " << *nTrkCut << endl; 
+      if (TmVtxNBc.isGoodGenVertex(gvtx, ei_RunNumber, ei_EventNumber, *nTrkCut)) {
+        GoodVertices++;
+     }
+    }
+    h_GoodVertices_actualInt[*nTrkCut]->Fill(ei_actualIntPerXing,GoodVertices);
+    h_GoodVertices_actualInt_2D[*nTrkCut]->Fill(ei_actualIntPerXing,GoodVertices);
+    h_GoodVertices_mcvtxn[*nTrkCut]->Fill(mcvtx_n,GoodVertices);
+    h_GoodVertices_mcvtxn_2D[*nTrkCut]->Fill(mcvtx_n,GoodVertices);
+    Int_t ngenint = 0;
+    for (int ivx=0; ivx < mcvtx_n; ++ivx) {
+      if (ivx == 0 && skip_hs) {
+        //std::cout << "Skipping hard scatter" << std::endl;
+        continue;  // In new MC, hard scatter is empty.
+      }
+      Int_t vtxtype = mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx));
+      if ((vtxtype == 0) || (vtxtype == 1)) {
+        ngenint++;
+    }
+  }
+    h_GoodVertices_NGenInt[*nTrkCut]->Fill(ngenint,GoodVertices);
+    h_GoodVertices_NGenInt_2D[*nTrkCut]->Fill(ngenint,GoodVertices);
+  }*/
 
   //do matching
+  //cout << "[AnaVtxTree] Calling MatchVertices " << endl;
   TmVtxNBc.MatchVertices(ei_RunNumber, ei_EventNumber);
 
   if (do_timing && m_TotRawEvents % 100 == 0) {
@@ -916,6 +1020,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
 
   //Now fill general truth-based properties
   //==========================
+  //cout << "[AnaVtxTree] Calling isGoodGenVertex on line 943 " << endl;
   m_VtxSim += (mcvtx_n + (skip_hs ? -1 : 0));
   Int_t numSimVtxGood(0);
   for (int gvx=0; gvx < mcvtx_n; gvx++) {
@@ -934,6 +1039,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   m_VtxRecoEffPU += Double_t(m_VtxRec) / m_VtxSim;
 
   // Now fill futher studies using this truth-matching
+  //cout << "[AnaVtxTree] Calling isGoodGenVertex on line 963 " << endl;
   if (do_timing && m_TotRawEvents % 100 == 0) {
     timer->Start();
   }
@@ -951,6 +1057,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
     }
   h_TM_class_hs->Fill(0.0, Double_t(numSimVtxGood_HS)); //total number of "good" events
   h_TM_class_pu->Fill(0.0, Double_t(numSimVtxGood_PU)); // total number of "good" pile-up interactions
+  
   bool hs_used=false; //mostly for debug
   for (vector<VertexTruthMatch>::iterator itRM = TmVtxNBc.matchedVtx.begin(); itRM != TmVtxNBc.matchedVtx.end(); ++itRM) {
     if (itRM->m_type == VertexTruthMatch::VtxTM_Match) {
@@ -1009,7 +1116,6 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   // -- Number of generated interactions
   Int_t current_NGenInt = 0;
   for (int ivx=0; ivx < mcvtx_n; ++ivx) {
-
     if (ivx == 0 && skip_hs) {
       //std::cout << "Skipping hard scatter" << std::endl;
       continue;  // In new MC, hard scatter is empty.
@@ -1017,7 +1123,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
 
     //if (TmVtxNBc.isGenInteraction(ivx, ei_RunNumber, ei_EventNumber)) {
     Int_t current_type = mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx));
-       if ((current_type == 0) || (current_type == 1)) {
+    if ((current_type == 0) || (current_type == 1)) {
       current_NGenInt++;
     }
   }
@@ -1025,12 +1131,12 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   // -- Total number of events
   m_ngenint += current_NGenInt;
   h_NTrig_NGenInt->Fill(current_NGenInt);
+  h_actualInt_NGenInt->Fill(ei_actualIntPerXing,current_NGenInt);
 
   if (do_timing && m_TotRawEvents % 100 == 0) {
     cout << "[AnaVtxTree] TIMING : David 1 = " << timer->RealTime() << endl;
     timer->Start();
   }
-
 
   // -- Classify vertices as real, split, fake.
   // -- Fake: if not at least NTrkCut vertices come from a single generated interaction.
@@ -1042,33 +1148,27 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
 
   // Initialize vtx_tm_result to "TmUnknown" for each vertex, and also count reconstructed vertices.
   for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
-
     for (int nv=0; nv < vxnbc_n-1; nv++) {
       vtx_tm_result[*nTrkCut][nv] = TmUnknown;
-
       if ((*vxnbc_nTracks)[nv] >= *nTrkCut) {
         current_NVtxRecon[*nTrkCut]++;
         m_vtx_total[*nTrkCut]++;
       }
-
     }
     h_NTrig_NVtxRecon[*nTrkCut]->Fill(current_NVtxRecon[*nTrkCut]);
   }
-  for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 
+  for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
     if (current_NVtxRecon[*nTrkCut] > 0) {
       h_all_events_NGenInt[*nTrkCut]->Fill(current_NGenInt);
       h_all_events_NVtxRecon[*nTrkCut]->Fill(current_NVtxRecon[*nTrkCut]);
     }
-
   }
 
   // Reco-truth index map
   std::map<Int_t, Int_t> reco_truth_indexmap;
   for (int nv=0; nv < vxnbc_n-1; nv++) {
-
     reco_truth_indexmap[nv] = -2;
-
     //Pre-selection: make sure the reconstructed vertex was processed in the truth matcher.
     vector<VertexTruthMatch>::iterator itRM;
     for (itRM = TmVtxNBc.matchedVtx.begin(); itRM != TmVtxNBc.matchedVtx.end(); ++itRM) {
@@ -1088,6 +1188,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         if (skip_hs && (*it).first == 0) {
           continue;
         }
+
         reco_truth_indexmap[nv] = (*it).first;
         break;
       }
@@ -1114,9 +1215,12 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         vtx_tm_result[*nTrkCut][nv] = TmReject;
         continue;
       }
+
       h_all_NGenInt[*nTrkCut]->Fill(current_NGenInt);
-      //h_all_NGenInt[*nTrkCut]->Fill(ei_actualIntPerXing);
+      h_all_actualInt[*nTrkCut]->Fill(ei_actualIntPerXing);
       h_all_NVtxRecon[*nTrkCut]->Fill(current_NVtxRecon[*nTrkCut]);
+      h_NVtxRecon_NGenInt[*nTrkCut]->Fill(current_NGenInt, current_NVtxRecon[*nTrkCut]);
+      h_NVtxRecon_actualInt[*nTrkCut]->Fill(ei_actualIntPerXing, current_NVtxRecon[*nTrkCut]);
       //cout << "[AnaVtxTree] INFO: current_NGenInt = " << current_NGenInt<< ", ei_actualIntPerXing = "<< ei_actualIntPerXing<< endl;
 
       // Get truth match for vertex nv
@@ -1137,7 +1241,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
       vector<std::pair<int, float> >::iterator gen_vtx = (itRM->m_matchList).begin();
       
       for (vector<std::pair<int, float> >::iterator gen_vtx = (itRM->m_matchList).begin(); gen_vtx != (itRM->m_matchList).end(); ++gen_vtx) {
-      if (!(&(gen_vtx))) continue;
+        if (!(&(gen_vtx))) continue;
         if ((*gen_vtx).first == 0 && skip_hs) {
           continue;
         }
@@ -1148,7 +1252,6 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         if (dominant_genvtx_idx == -2) {
           dominant_genvtx_idx = (*gen_vtx).first;
         }
-
         if ((*gen_vtx).second * (*vxnbc_nTracks)[nv] >= (float)*nTrkCut - 0.01) {
           vtx_is_fake = false;
         }
@@ -1201,18 +1304,15 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
           }
           cout << endl;
         }
-
         continue; // Vertex is fake, move on
       }
 
       // -- CLASSIFICATION 2: SPLIT
       for (int nv2 = 0; nv2 < nv; nv2++) {
-
         // Debug: make sure all the prior vertices have been classified
         if (vtx_tm_result[*nTrkCut][nv2] == TmUnknown) {
           cout << "[AnaVtxTree] WARNING : Already-processed vertex is still labelled as TmUnknown! Needs debugging!" << endl;
         }
-
         if ((vtx_tm_result[*nTrkCut][nv2] != TmReal) || (nv == nv2)) {
           continue;
         } else {
@@ -1276,7 +1376,11 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
       h_real_ndf[*nTrkCut]->Fill((*vxnbc_ndof)[nv]);
       h_real_ntrk[*nTrkCut]->Fill((*vxnbc_nTracks)[nv]);
       h_real_sumPt[*nTrkCut]->Fill((*vxnbc_sumPt)[nv]);
-    }
+
+    } //Finished clasifications
+    h_NReal_NVtxRecon[*nTrkCut]->Fill(current_NVtxRecon[*nTrkCut],current_NReal);
+    h_NReal_actualInt[*nTrkCut]->Fill(ei_actualIntPerXing,current_NReal);
+    h_NReal_NGenInt[*nTrkCut]->Fill(current_NGenInt,current_NReal);
 
     if (current_NVtxRecon[*nTrkCut] > 0 && current_NReal == 0 && current_NFake > 0) {
       h_fake_events_NGenInt[*nTrkCut]->Fill(current_NGenInt);
@@ -1293,13 +1397,11 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
       h_event_contains_fake_NVtxRecon[*nTrkCut]->Fill(current_NVtxRecon[*nTrkCut]);
     }
 
-
     // Loop over pairs of real vertices to look at real vtx separations
     for (int nv=0; nv < vxnbc_n-1; nv++) {
       if ((*vxnbc_nTracks)[nv] < *nTrkCut) {
         continue;
       }
-
       for (int nv2=0; nv2 < nv; nv2++) {
         if ((*vxnbc_nTracks)[nv2] < *nTrkCut) {
           continue;
@@ -1313,7 +1415,6 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         h_all_dz_NVtxRecon[*nTrkCut]->Fill(dz, current_NVtxRecon[*nTrkCut]);
 
         if ((vtx_tm_result[*nTrkCut][nv] == TmReal) && (vtx_tm_result[*nTrkCut][nv2] == TmReal)) {
-
           h_real_dz_NGenInt[*nTrkCut]->Fill(dz, current_NGenInt);
           h_real_dzsig_NGenInt[*nTrkCut]->Fill(dz_sig, current_NGenInt);
           h_real_dz_NVtxRecon[*nTrkCut]->Fill(dz, current_NVtxRecon[*nTrkCut]);
@@ -1322,7 +1423,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         }
       }
     }
-  }
+  } // nTrkCut loop
 
   if (TagVtxIndex >= 0) {
     h_privtx_z_mu->Fill((*vxnbc_z)[TagVtxIndex], ei_actualIntPerXing);
@@ -1334,10 +1435,9 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   //End David's stuff
   /********************************************************************************/
 
+  #endif
 
-#endif
-
-#ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   {
     //P.V. Identification efficiency
     vector<VertexTruthMatch>::iterator itRM;
@@ -1354,10 +1454,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
         }
     }
   }
-
-
-#endif
-
+  #endif
 
   // --- Pile-up vertex variables
   //    for (vector<int>::iterator vt = vxnbc_type->begin(); vt != vxnbc_type->end(); ++vt)
@@ -1383,8 +1480,6 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
     cout << "[AnaVtxTree] TIMING : Simone 2 = " << timer->RealTime() << endl;
     timer->Start();
   }
-
-
 
   if (do_timing && m_TotRawEvents % 100 == 0) {
     cout << "[AnaVtxTree] TIMING : Final = " << timer->RealTime() << endl;
@@ -1427,9 +1522,9 @@ void AnaVtxTree::SlaveTerminate() {
   // --- Evaluate efficiency-related
   computeStats();
 
-#ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   computeMCOnlyStats();
-#endif
+  #endif
 
 
   // --- Print/save results
@@ -1481,13 +1576,13 @@ void AnaVtxTree::SlaveTerminate() {
   outputTxt << "-------- Displaying settings --------------" << std::endl;
   outputTxt << "[AnaVtxTree] Quality Vertex version: "
             << GetQualityVertexVersion(0) <<"." << GetQualityVertexVersion(1) <<"." << GetQualityVertexVersion(2) << std::endl;
-#ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   outputTxt << "[AnaVtxTree] Working in MC mode: truth quantities calculated." << endl;
   outputTxt << "[AnaVtxTree] Selection efficiency max Z distance: " << VtxEffCriteriaZ << " mm" << std::endl;
   outputTxt << "[AnaVtxTree] Selection efficiency max T distance: " << VtxEffCriteriaT << " (sigma)" << std::endl;
   outputTxt << "[AnaVtxTree] Trigger filter:" << triggerName << endl;
   outputTxt << "[AnaVtxTree] actualIntPerXing filter: " << muFilter_min << " - " << muFilter_max << endl;
-#endif
+  #endif
   outputTxt<<"---------- Efficiencies and related ----------"<<std::endl;
   outputTxt<<"General:"<<endl;
   outputTxt<<" Number of events: " << m_TotRawEvents << endl;
@@ -1563,9 +1658,9 @@ void AnaVtxTree::SlaveTerminate() {
   cout << "Saving histograms to: " << (outputFileName + TString(".root")) << std::endl;
   outputNtp->cd();
   saveHistograms();
-#ifdef PLOT_MC_TRUTH
+  #ifdef PLOT_MC_TRUTH
   TmVtxNBc.WriteDebugHisto();
-#endif
+  #endif
 
   // --- Close output files
   outputNtp->Close();
@@ -1927,13 +2022,14 @@ int AnaVtxTree::calculateEfficiency(Double_t &eff, Double_t &effErr, const Int_t
 // 2.1.5: DR req. on 2-,3-trk vertices + tagged vertex required with at least 5 tracks
 int AnaVtxTree::isGoodVertex(int vertexToCheck) {
   int taggedVertex = -1;
-
+  //cout << "[AnaVtxTree] AnaVtxTree::isGoodVertex qualityVertexVersion = " << qualityVertexVersion << endl;
   if (qualityVertexVersion == 1) {
     //standard-definition
     Double_t minNTracks = qualityVertexParameter;
     if (minNTracks == 0) {
       minNTracks = 2;  //default value
     }
+    //cout << "[AnaVtxTree] AnaVtxTree::isGoodVertex minNTracks = " << minNTracks << endl;
     if (vertexToCheck == -1) {
       //check only algorithm-tagged vertex
       //if ((*vxnbc_nTracks)[0] >= minNTracks && (*vxnbc_cov_x)[0]!=0 && (*vxnbc_cov_y)[0]!=0 && vxnbc_n > 1)

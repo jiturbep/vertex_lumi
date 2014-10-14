@@ -98,13 +98,14 @@ class AnaVtxTree : public VtxTree {
     static const Int_t NBinsYAxis = 400;
     static const Float_t LowYAxis = -1.;
     static const Float_t HighYAxis = 3.;
-    static const Int_t MaxNGenInt = 79;
-    static const Int_t MaxNVtxRecon = 39;
+    static const Int_t MaxNGenInt = 120; //ngenint goes to up to 114, actualIntPerXing goes up to 71
+    static const Int_t MaxNVtxRecon = 100;
     vector<Int_t> nTrkCuts;
 
     TH1F* h_NTrig_NGenInt;
     std::map<Int_t, TH1F*> h_NTrig_NVtxRecon;
-    TH2F* h_NGenInt_mu;
+    TH2F* h_actualInt_NGenInt;
+    TH2F* h_actualInt_mcvtxn;
 
     // Fake correction
     std::map<Int_t, TH1F*> h_fakes_NGenInt;
@@ -112,6 +113,7 @@ class AnaVtxTree : public VtxTree {
     std::map<Int_t, TH1F*> h_splits_NGenInt;
     std::map<Int_t, TH1F*> h_real_NGenInt;
     std::map<Int_t, TH1F*> h_all_NGenInt;
+    std::map<Int_t, TH1F*> h_all_actualInt;
 
     std::map<Int_t, TH1F*> h_fakes_NVtxRecon;
     std::map<Int_t, TH1F*> h_truefakes_NVtxRecon;
@@ -128,6 +130,18 @@ class AnaVtxTree : public VtxTree {
     std::map<Int_t, TH1F*> h_event_contains_any_NGenInt;
     std::map<Int_t, TH1F*> h_event_contains_fake_NVtxRecon;
     std::map<Int_t, TH1F*> h_event_contains_any_NVtxRecon;
+
+    std::map<Int_t, TProfile*> h_GoodVertices_actualInt;
+    std::map<Int_t, TH2F*> h_GoodVertices_actualInt_2D;
+    std::map<Int_t, TProfile*> h_GoodVertices_NGenInt;
+    std::map<Int_t, TH2F*> h_GoodVertices_NGenInt_2D;
+    std::map<Int_t, TProfile*> h_GoodVertices_mcvtxn;
+    std::map<Int_t, TH2F*> h_GoodVertices_mcvtxn_2D;
+    std::map<Int_t, TProfile*> h_NVtxRecon_actualInt;
+    std::map<Int_t, TProfile*> h_NVtxRecon_NGenInt;
+    std::map<Int_t, TProfile*> h_NReal_actualInt;
+    std::map<Int_t, TProfile*> h_NReal_NGenInt;
+    std::map<Int_t, TProfile*> h_NReal_NVtxRecon;
 
 
     // Masking correction

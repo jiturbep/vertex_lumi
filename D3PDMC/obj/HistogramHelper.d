@@ -40,4 +40,5 @@
  /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TMatrixDBasefwd.h \
  /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TH3F.h \
  /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TH3.h \
- /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TAtt3D.h
+ /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TAtt3D.h \
+ /cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.0.3/LCGCMT/LCGCMT_67b/InstallArea/x86_64-slc6-gcc47-opt/bin/../../../../../sw/lcg/app/releases/ROOT/5.34.13/x86_64-slc6-gcc47-opt/root/include/TProfile.h

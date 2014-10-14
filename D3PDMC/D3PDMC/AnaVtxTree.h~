@@ -19,6 +19,7 @@
 #include <map>
 #include <limits>
 #include <string>
+#include <sstream>
 
 //ROOT includes
 #include "TH1F.h"
@@ -88,17 +89,17 @@ class AnaVtxTree : public VtxTree {
   protected:
 
     // -- Histograms
-    static const Int_t NBinsZAxis = 400;
-    static const Float_t LowZAxis = -1000.;
-    static const Float_t HighZAxis = 1000.;
+    static const Int_t NBinsZAxis = 600;
+    static const Float_t LowZAxis = -300.;
+    static const Float_t HighZAxis = 300.;
     static const Int_t NBinsXAxis = 400;
     static const Float_t LowXAxis = -2.;
     static const Float_t HighXAxis = 2.;
     static const Int_t NBinsYAxis = 400;
     static const Float_t LowYAxis = -1.;
     static const Float_t HighYAxis = 3.;
-    static const Int_t MaxNGenInt = 40;
-    static const Int_t MaxNVtxRecon = 40;
+    static const Int_t MaxNGenInt = 79;
+    static const Int_t MaxNVtxRecon = 39;
     vector<Int_t> nTrkCuts;
 
     TH1F* h_NTrig_NGenInt;

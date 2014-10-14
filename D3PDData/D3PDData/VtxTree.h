@@ -90,6 +90,10 @@ class VtxTree : public TSelector {
     TBranch        *b_ei_detmask1;   //!
     TBranch        *b_ei_actualIntPerXing;   //!
     TBranch        *b_ei_averageIntPerXing;   //!
+    TBranch        *b_mcvtx_n;   //!
+    TBranch        *b_mcevt_nparticle;   //!
+    TBranch        *b_mcvtx_mcevt_index;   //!
+    TBranch        *b_mcevt_pileUpType;   //!
     TBranch        *b_vxnbc_n;   //!
     TBranch        *b_vxnbc_x;   //!
     TBranch        *b_vxnbc_y;   //!

@@ -115,6 +115,10 @@ void VtxTree::Init(TTree *tree) {
   //fChain->SetBranchAddress("trig_DB_SMK", &trig_DB_SMK, &b_trig_DB_SMK);
   //fChain->SetBranchAddress("trig_DB_L1PSK", &trig_DB_L1PSK, &b_trig_DB_L1PSK);
   //fChain->SetBranchAddress("trig_DB_HLTPSK", &trig_DB_HLTPSK, &b_trig_DB_HLTPSK);
+  fChain->SetBranchAddress("mcvtx_n", &mcvtx_n, &b_mcvtx_n);
+  fChain->SetBranchAddress("mcevt_nparticle", &mcevt_nparticle, &b_mcevt_nparticle);
+  fChain->SetBranchAddress("mcvtx_mcevt_index", &mcvtx_mcevt_index, &b_mcvtx_mcevt_index);
+  fChain->SetBranchAddress("mcevt_pileUpType", &mcevt_pileUpType, &b_mcevt_pileUpType);
   fChain->SetBranchAddress("vxnbc_n", &vxnbc_n, &b_vxnbc_n);
   fChain->SetBranchAddress("vxnbc_x", &vxnbc_x, &b_vxnbc_x);
   fChain->SetBranchAddress("vxnbc_y", &vxnbc_y, &b_vxnbc_y);
@@ -159,6 +163,10 @@ void VtxTree::Init(TTree *tree) {
   //fChain->SetBranchStatus("trig_DB_SMK",1);
   //fChain->SetBranchStatus("trig_DB_L1PSK",1);
   //fChain->SetBranchStatus("trig_DB_HLTPSK",1);
+  fChain->SetBranchStatus("mcvtx_n",1);
+  fChain->SetBranchStatus("mcevt_nparticle",1);
+  fChain->SetBranchStatus("mcvtx_mcevt_index",1);
+  fChain->SetBranchStatus("mcevt_pileUpType",1);
   fChain->SetBranchStatus("vxnbc_n",1);
   fChain->SetBranchStatus("vxnbc_x",1);
   fChain->SetBranchStatus("vxnbc_y",1);

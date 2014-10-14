@@ -22,7 +22,7 @@
 // Constructor
 ////////////////////////////////////////////////////////////////////////////////////////
 AnaVtxTree::AnaVtxTree() : VtxTree()
-  , m_GRLReader("../GoodRunsLists/data12_8TeV.periodAllYear_DetStatus-v54-pro13-04_DQDefects-00-00-33_PHYS_CombinedPerf_Tracking_Tracking.xml") // GRL reader tool
+  , m_GRLReader("/afs/hep.man.ac.uk/u/julia/vertex_lumi/GoodRunsLists/data12_8TeV.periodAllYear_DetStatus-v54-pro13-04_DQDefects-00-00-33_PHYS_CombinedPerf_Tracking_Tracking.xml") // GRL reader tool
   , use_plbs(false) // Specify if pLBs are needed
   , split_maxdzsig(0.) // Split vertex re-merging
   , max_chi2ndf(-1.) // Apply cut on chi2/ndf of reconstructed vertices
@@ -32,9 +32,9 @@ AnaVtxTree::AnaVtxTree() : VtxTree()
   , pLBmax(0)
   , dumpTxtFileName("") //by default no dumping on text file
   , physics_run(false)
-  , qualityVertexVersion(3)
+  , qualityVertexVersion(1)
   , qualityVertexModifier(0)
-  , qualityVertexParameter(5)
+  , qualityVertexParameter(2)
 {};
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -69,14 +69,16 @@ void AnaVtxTree::SlaveBegin(TTree *tree) {
     dumpTxtFile.open(dumpTxtFileName.Data());
   }
 
-  nTrkCuts.push_back(2);
+  //nTrkCuts.push_back(2);
   nTrkCuts.push_back(3); 
   nTrkCuts.push_back(4);
   nTrkCuts.push_back(5);
-  nTrkCuts.push_back(6);
-  nTrkCuts.push_back(7);
-  nTrkCuts.push_back(8);
-  nTrkCuts.push_back(10);
+  //nTrkCuts.push_back(6);
+  //nTrkCuts.push_back(7);
+  //nTrkCuts.push_back(8);
+  //nTrkCuts.push_back(10);
+
+  //nTrkCuts.push_back(5);
 
 }
 
@@ -95,7 +97,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   fChain->GetTree()->GetEntry(entry);
 
   // --- Print progress
-  if (m_TotRawEvents % 1000 == 0) {
+  if (m_TotRawEvents % 100000 == 0) {
     std::cout << "[AnaVtxTree] INFO: Processing event " << m_TotRawEvents
               << "(Entry: " << entry << ", Tree #: " << fChain->GetTreeNumber() << ")" << std::endl;
   }
@@ -118,7 +120,8 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   if (ei_RunNumber == 191373 || ei_RunNumber == 200805 || ei_RunNumber == 201351 || 
       ei_RunNumber == 215021 || ei_RunNumber == 214984 || ei_RunNumber == 207216 || 
       ei_RunNumber == 207219 || ei_RunNumber == 216399 || ei_RunNumber == 216416 || 
-      ei_RunNumber == 216432 || ei_RunNumber == 207044 ) { //Added 215021, 214984 -Nov2012, 207216, 207219 -July2012 //18Nov: Deleted 206962, 206955, 206971 to treat it BCID blindly
+      ei_RunNumber == 216432 || ei_RunNumber == 206955 ||
+      ei_RunNumber == 206971 || ei_RunNumber == 207044 || ei_RunNumber == 207046 ) { //Added 215021, 214984 -Nov2012, 207216, 207219 -July2012 //18Nov: Deleted 206962 to treat it BCID blindly
     if (triggerTool and triggerName != "" && !(triggerTool->IsPassed(triggerName.Data())) ) { return false; } // Trigger
     if (find(bcidListCollisions.begin(), bcidListCollisions.end(), ei_bcid) == bcidListCollisions.end()) { return false; } // BCID
   }
@@ -141,11 +144,8 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   } 
   //Find the pLB. Note that the variable current_pLB will specify the pLB if inside the scan, elsewise the normal lumiblock!
   #if defined INPUT_DATA
-  //std::cout << "[AnaVtxTree] INFO: INPUT_DATA" << std::endl;
   //If input is data, decide whether to use pLBs or normal LBs.
   if (use_plbs) {
-  //std::cout << "[AnaVtxTree] INFO: use_plbs" << std::endl;
-
     bool goodPLB=false;
     for (unsigned int idx=0; idx < pseudoLB_Timestamps.size(); idx++) {
       if ((curTime >= pseudoLB_Timestamps[idx].second.first) && (curTime <= pseudoLB_Timestamps[idx].second.second)) {
@@ -163,30 +163,45 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
     if (!goodPLB) {
       return false;
     }
-
   } else {
     current_pLB = ei_lbn;
-   // std::cout << "ei_lbn = " << ei_lbn << std::endl;
   }
-
   #elif defined INPUT_MC
-  
+  //std::cout << "[AnaVtxTree] INFO: INPUT_MC" << std::endl;
   //If input is MC, use the number of generated interactions (in-time pileup only) as the "lumiblock."
   // REVISION: How about we just use ei_actualIntPerXing? Maybe this will reduce error later on. 
   Int_t current_NGenInt = 0;
+  //std::cout << "[AnaVtxTree] INFO: ei_actualIntPerXing " << ei_actualIntPerXing << std::endl;
 
   for (int ivx=0; ivx < mcvtx_n; ++ivx) {
+    //std::cout << "[AnaVtxTree] INFO: ivx " << ivx << std::endl;
+    //std::cout << "[AnaVtxTree] INFO: (*mcevt_nparticle)[0] " << (*mcevt_nparticle)[0] << std::endl;
+    //std::cout << "[AnaVtxTree] INFO: mcevt_pileUpType->at(" << mcvtx_mcevt_index->at(ivx) << ") " << mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx)) << std::endl;
+    if (ivx == 0 && (*mcevt_nparticle)[0] == 1 && mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx)) == 0){
+      continue; // In new MC, hard scatter is empty.
+    } 
 
-  if (ivx == 0 && (*mcevt_nparticle)[0] == 1 && mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx)) == 0) continue; // In new MC, hard scatter is empty.
+    //if (TmVtxNBc.isGenInteraction(ivx, ei_RunNumber, ei_EventNumber)) {
+    Int_t current_type = mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx));
+    if ((current_type == 0) || (current_type == 1)) {
 
-  //if (TmVtxNBc.isGenInteraction(ivx, ei_RunNumber, ei_EventNumber)) {
-  Int_t current_type = mcevt_pileUpType->at(mcvtx_mcevt_index->at(ivx));
-  if ((current_type == 0) || (current_type == 1)) {
-  current_NGenInt++;
+    /*current_mcevt = mcvtx_mcevt_index[ivx]
+    for each particle
+      if particle index == current mc evnt then
+        is this a real & final state particle
+        did it come from this vertex
+        stuff to check association to this vertex*/
+      //if (ei_actualIntPerXing == 15.0){
+      current_NGenInt++;
+      //}
     }
   }
-  //current_pLB = current_NGenInt;
-  current_pLB = ei_actualIntPerXing;
+  current_pLB = current_NGenInt;
+  //current_pLB = ei_actualIntPerXing;
+  if (current_pLB == 0 && current_pLB>200){
+    std::cout << "current_pLB = " << current_pLB << std::endl;
+  }
+  std::cout << "[AnaVtxTree] INFO: mcvtx_n " << mcvtx_n << ", vxnbc_n " << vxnbc_n << ", current_NGenInt " << current_NGenInt << ", ei_actualIntPerXing " << ei_actualIntPerXing << std::endl;
   #endif 
   // end INPUT_MC
 
@@ -195,9 +210,9 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   #ifdef INPUT_DATA
   
   if (physics_run) {
-  current_bcid = 0;
+    current_bcid = 0;
   } else {
-  current_bcid = ei_bcid;
+    current_bcid = ei_bcid;
   }
   #elif defined INPUT_MC
   current_bcid = 0;
@@ -220,7 +235,9 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   
   //Fill primary vertex histogram(s)
   if (TagVtxIndex >= 0) {
+    // if (TMath::Abs((*vxnbc_z)[TagVtxIndex]) > 10. ){ //I'm not sure why this cut is here, it is not in the older versions. I'll remove it 
     h_privtx_z_pLB[current_bcid]->Fill((*vxnbc_z)[TagVtxIndex], current_pLB); 
+    //}
   }
 
   h_events_pLB[current_bcid]->Fill(current_pLB); 
@@ -228,8 +245,8 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
   //Increment the total number of "triggers" map
   NTrig[current_bcid][current_pLB]++;
   for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
-        NVtxBeforeSplitCorrection_pertrack[*nTrkCut] = 0; 
-        NVtxBeforeSplitCorrection_pertrack_perbcid[*nTrkCut][current_bcid] = 0; 
+    NVtxBeforeSplitCorrection_pertrack[*nTrkCut] = 0; 
+    NVtxBeforeSplitCorrection_pertrack_perbcid[*nTrkCut][current_bcid] = 0; 
   }
   
   //Vertex counts before applying the split correction
@@ -253,7 +270,7 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
     h_nvtx_pertrack[*nTrkCut]->Fill(NVtxBeforeSplitCorrection_pertrack[*nTrkCut]);
     h_nvtx_pertrack_perbcid[*nTrkCut][current_bcid]->Fill(NVtxBeforeSplitCorrection_pertrack_perbcid[*nTrkCut][current_bcid]);
     //std::cout << "Line 218 NVtxBeforeSplitCorrection_pertrack["<<*nTrkCut<<"] = "<<NVtxBeforeSplitCorrection_pertrack[*nTrkCut]<<std::endl;
-    }
+  }
   //#ifdef VERBOSE
   for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
     h_nvtx_pLB[*nTrkCut][current_bcid]->Fill(NVtxBeforeSplitCorrection[*nTrkCut][current_bcid][current_pLB], current_pLB);
@@ -276,6 +293,10 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
       if (find(vtx_skip_list.begin(), vtx_skip_list.end(), nv2) != vtx_skip_list.end()) {
         continue;
       }
+
+      //if ( TMath::Abs((*vxnbc_z)[nv]) < 10 || TMath::Abs( (*vxnbc_z)[nv2] ) < 10 ){
+      // continue;
+      //}//Again, I don't know why this cut is here... I'll remove it too
 
       float err1 = (*vxnbc_cov_z)[nv];
       float err2 = (*vxnbc_cov_z)[nv2];
@@ -322,13 +343,10 @@ Bool_t AnaVtxTree::Process(Long64_t entry) {
       }
     }
     (*vxnbc_nTracks)[nv] += extra_tracks;
-
     if (max_chi2ndf > 0. && (*vxnbc_chi2)[nv] / (*vxnbc_ndof)[nv] > max_chi2ndf) {
       continue;
     }
-
     h_vtx_nTracks_pLB[current_bcid]->Fill((*vxnbc_nTracks)[nv], current_pLB);
-
     for (std::vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
       if ((*vxnbc_nTracks)[nv] >= *nTrkCut) {
         NVtxAfterSplitCorrection[*nTrkCut][current_bcid][current_pLB]++;
@@ -641,7 +659,7 @@ int AnaVtxTree::isGoodVertex(int vertexToCheck) {
         break; // Vertex with highest sumPt2 with quality requirements
       }
     }
-  } else if (qualityVertexVersion == 3) {
+  }else if (qualityVertexVersion == 3) {
     Double_t minNTracks = qualityVertexParameter;
     if (minNTracks == 0) {
       minNTracks = 5;  //default value
@@ -663,7 +681,6 @@ int AnaVtxTree::isGoodVertex(int vertexToCheck) {
       taggedVertex = -1;
     }
   }
-
   return taggedVertex;
 }
 
@@ -852,7 +869,7 @@ void AnaVtxTree::SetupLBInfo( const unsigned int &runNumber ) {
     for (int p = 3034; p<=3075 ; p++){
       bcidListCollisions.push_back(p);
     }
-} /*else if (runNumber == 206955 || runNumber == 206971 || runNumber == 207044 || runNumber == 207046 ) { // 2012 50ns run, 1368 bunches 18Nov: Deleted 206962 to treat it BCID blindly
+} else if (runNumber == 206955 || runNumber == 206971 || runNumber == 207044 || runNumber == 207046 ) { // 2012 50ns run, 1368 bunches 18Nov: Deleted 206962 to treat it BCID blindly
     use_plbs = false;
     // Set lumiblocks by hand
     pLBmin = 0;
@@ -863,14 +880,16 @@ void AnaVtxTree::SetupLBInfo( const unsigned int &runNumber ) {
     for (int i = 0; i<1368; i++){
       bcidListCollisions.push_back(list[i]);
     }
-}*/ else { // Otherwise, we're in a physics run, so run BCID-blind.
+} else {
+    std::cout << "Physics run, BCID-blind" << std::endl; 
+    // Otherwise, we're in a physics run, so run BCID-blind.
     // Set pLB and BCID info
     use_plbs = false;
     physics_run = true;
     bcidListCollisions.push_back(0);
     // Set lumiblocks by hand
     pLBmin = 1; //changed from 1 to 0
-    pLBmax = 1500; //changed from 1500 to 80 for MC Closure test
+    pLBmax = 200; //changed from 1500 to 80 for MC Closure test
   }
   
   // Print pLB info

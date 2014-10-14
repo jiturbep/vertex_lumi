@@ -10,6 +10,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 
 class HistogramHelper {
 
@@ -19,6 +20,11 @@ public:
                           unsigned int bins, Double_t lbin, Double_t ubin,
                           TString xaxistitle, TString yaxistitle,
                           bool save=true, TString save_name="");
+    static TProfile* defineProfile(TString name, unsigned
+                            int xbins, Double_t lxbin, Double_t uxbin,
+                            Double_t lybin, Double_t uybin,
+                            TString xaxistitle, TString yaxistitle,
+                            bool save=true, TString save_name="");
     static TH1I* defineIHistogram(TString name,
                            unsigned int bins, Int_t lbin, Int_t ubin,
                            TString xaxistitle, TString yaxistitle,

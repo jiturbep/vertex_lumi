@@ -240,6 +240,7 @@ int main(int argc, char **argv) {
     triggerChain->Add(irf->c_str());
   }
   cout << "Chain created. Processing.." << endl;
+  cout << "Total number of events: " << vertexChain->GetEntries() << endl;
 
   if (inputRootFilesTxt.size() == 0) {
     cerr << "ERROR: No ROOT input files supplied." << endl;

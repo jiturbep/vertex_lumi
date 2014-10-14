@@ -6,18 +6,14 @@
 
 // STL
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <getopt.h>
 #include <string>
-#include <stdio.h>
 
 // ROOT
 #include "TApplication.h"
 #include "TChain.h"
 #include "TObjString.h"
-#include "TSystem.h"
-
 
 // --- global debug
 int  verbose_debug;
@@ -123,8 +119,7 @@ int main(int argc, char **argv) {
   }
 
 
- 
- // --- Set style
+  // --- Set style
   SetAtlasStyle(2);
 
   // --- init chains
@@ -132,39 +127,19 @@ int main(int argc, char **argv) {
   TChain triggerChain("VtxTreeMeta/TrigConfTree");
 
   // --- set input files
-  // Create list of files in eos with a small python script
-  char* runNumber = argv[3];
-  std::string run = runNumber;
-  gSystem->Exec( ("python /afs/cern.ch/user/j/jiturbep/vertex_lumi/D3PDData/util/CreateList.py " + run).c_str() );
-
   //now add files from files recognized by ROOT TApplication
-  std::string line;
-  std::string name = "/afs/cern.ch/user/j/jiturbep/vertex_lumi/rootfiles_fullname_";
-  std::string txt = ".txt";
-  std::string step1 = name + run;
-  std::string fullname = step1 + txt;
-  std::ifstream rootfiles(fullname.c_str());
-  if(!rootfiles){
-    std::cout<<"Error opening output file"<< std::endl;
-    system("pause");
-    return -1;
+  TIter nextInputFile(theApp.InputFiles());
+  TObjString *InputFile;
+  while( (InputFile = (TObjString*)nextInputFile()) ) {
+    inputRootFilesTxt.push_back(InputFile->GetString().Data());
   }
-  while (std::getline(rootfiles, line))
-    {
-      inputRootFilesTxt.push_back(line);
-    }  
-  //TIter nextInputFile(theApp.InputFiles());
-  //TObjString *InputFile;
-  //while( (InputFile = (TObjString*)nextInputFile()) ) {
-  // inputRootFilesTxt.push_back(InputFile->GetString().Data());
-  // }
 
   //Print total number of input files and file list (if verbose) and add them to the chain
   std::cout << "[TrackingAnaData] INFO : Number of input files: " << inputRootFilesTxt.size() << std::endl;
   for (std::vector<std::string>::iterator irf = inputRootFilesTxt.begin(); irf != inputRootFilesTxt.end(); ++irf) {
-    //if (verbose_debug) {
+    if (verbose_debug) {
       std::cout << "[TrackingAnaData] INFO : Input file: " << *irf << std::endl;
-      //}
+    }
     vertexChain.Add(irf->c_str());
     triggerChain.Add(irf->c_str());
   }

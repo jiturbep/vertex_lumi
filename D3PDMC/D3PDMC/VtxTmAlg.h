@@ -179,7 +179,7 @@ class VtxTmAlg {
 
     // --- Utility functions
     /// Apply "quality" requirement to generated vertices to consider
-    int isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber); //return != 0 if gen vertex is good
+    int isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber, int nGoodTracks = 2); //return != 0 if gen vertex is good
     int GetNTracksGenVtx(int vertexToCheck, int runNumber, long evtNumber);
     int isGenInteraction(int vertexToCheck, int runNumber, long evtNumber);
 };

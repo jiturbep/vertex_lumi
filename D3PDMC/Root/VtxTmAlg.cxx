@@ -72,6 +72,7 @@ void VtxTmAlg::SetDebug(int dbg) {
 
 void VtxTmAlg::MatchVertices(int runNumber, long evtNumber) {
   matchedVtx.clear(); //reset container
+  //cout << "[VtxTmAlg] debugTM = " << debugTM << endl;
 
   if (debugTM >= 1) {
     InitDebugHistograms();
@@ -90,7 +91,7 @@ void VtxTmAlg::MatchVertices(int runNumber, long evtNumber) {
         cout << " " << it << trk_pt->at(it) << ", " << trk_eta->at(it) << ", " << trk_mc_probability->at(it) << ", " << trk_mc_index->at(it) << endl;
       }
     }
-    cout << "Generated vertices (PUType = 0,1 && At least 2 particles with pT > 400, |eta| < 2.4)" << endl;
+    cout << "Generated vertices (PUType = 0,1 && At least 2 particles with pT > 900, |eta| < 2.4)" << endl;
     for (int nv=0; nv < mcvtx_n; nv++) {
       if (isGoodGenVertex(nv, runNumber, evtNumber)) {
         cout << nv << " X,Y,Z= (" << mcvtx_x->at(nv) << ", " << mcvtx_y->at(nv) << ", " << mcvtx_z->at(nv) << "). GenEvt= " << mcvtx_mcevt_index->at(nv) << endl;
@@ -106,7 +107,7 @@ void VtxTmAlg::MatchVertices(int runNumber, long evtNumber) {
       }
       Int_t npacc(0); //n particles within acceptance
       for (int idxPart=0; idxPart < mcpart_n; idxPart++) {
-        if (mcpart_mcevt_index->at(idxPart) == ne && mcpart_pt->at(idxPart) > 400. && fabs(mcpart_eta->at(idxPart)) < 2.4) {
+        if (mcpart_mcevt_index->at(idxPart) == ne && mcpart_pt->at(idxPart) > 900. && fabs(mcpart_eta->at(idxPart)) < 2.4) {
           npacc++;
         }
       }
@@ -116,6 +117,7 @@ void VtxTmAlg::MatchVertices(int runNumber, long evtNumber) {
   } //debug
 
   //Loop over reconstructed vertices
+  //cout << "[VtxTmAlg] vx_n = " << vx_n << ", mcvtx_n = " << mcvtx_n << ", trk_n = "  << trk_n << endl;
   for (int nv=0; nv < vx_n-1; nv++) { //Should it not start at 0? let's try
     Int_t nFakes(0); //not particle matched
     map<Int_t,Int_t> nVtxG; //matched to n-th generated vertex, with ntracks (n, ntracks)
@@ -124,12 +126,16 @@ void VtxTmAlg::MatchVertices(int runNumber, long evtNumber) {
     map<Int_t, Float_t> nVtxGW; // matched to n-th gen vtx, with weight W (n, W)
     Int_t nSecW(0);
     Float_t nTotW(0);
+    int counter = 0;
     for (int nvg=0; nvg < mcvtx_n; nvg++) {
-      if (isGoodGenVertex(nvg, runNumber, evtNumber)) {
+      //if (isGoodGenVertex(nvg, runNumber, evtNumber, 5)) { 
+      if (isGoodGenVertex(nvg, runNumber, evtNumber)) { 
+        counter += 1;
         nVtxG[nvg] = 0;
         nVtxGW[nvg]  = 0.0;
       }
     }
+    //cout << "[VtxTmAlg] mcvtx_n = " << mcvtx_n << ", counter = " << counter << endl;
     //cout << "Ntrk = " << vx_trk_n->at(nv) << ". C1 = " << vx_trk_weight->at(nv).size() << ". C2 = " << vx_trk_index->at(nv).size() << endl;
     //cout << "[VtxTmAlg] nv = " << nv << endl;
     //cout << "[VtxTmAlg] vx_trk_n->at("<<nv<<") = " << vx_trk_n->at(nv) << endl;
@@ -469,7 +475,7 @@ int VtxTmAlg::getMotherOfSplit(int idxRecoVtx) {
   return -3; //mother vertex not found
 }
 
-int VtxTmAlg::isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber) {
+int VtxTmAlg::isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber, int nGoodTracks ) {
   //From profiling, it seems we spend 40% of our time here... crazy.
   //Implement a caching system if a runNumber/evtNumber is provided (now mandatory)
   if (not (runNumber == m_runNumber && evtNumber == m_evtNumber)) {
@@ -478,10 +484,18 @@ int VtxTmAlg::isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber) 
     m_runNumber = runNumber;
     m_evtNumber = evtNumber;
 
-    Int_t minNGoodTracks=2; //min number of good (pt, eta) charged tracks at the gen vertex
+    Int_t minNGoodTracks=nGoodTracks; //min number of good (pt, eta) charged tracks at the gen vertex
+    //cout << "[VtxTmAlg] minNGoodTracks = " << minNGoodTracks << endl;
+
     //float minGenPt=400.; //min pT of considered tracks
     float minGenPt=900.; //min pT of considered tracks
     float maxGenEta=2.5; //max eta of conisdered tracks
+    
+    //cout << "[VtxTmAlg] minNGoodTracks = " << minNGoodTracks << endl;
+    if ( minNGoodTracks >= 3 ){ genVertexRequirementVersion = 2; }
+    //cout << "genVertexRequirementVersion = " << genVertexRequirementVersion << endl;
+
+    //cout << "[VtxTmAlg] genVertexRequirementVersion = " << genVertexRequirementVersion << endl;
 
     //First require it to be either a PV or in-time PileUp vertex
     for (int vtxToCheck = 0; vtxToCheck < mcvtx_n; vtxToCheck++) {
@@ -496,7 +510,7 @@ int VtxTmAlg::isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber) 
       } else if (genVertexRequirementVersion == 2) {
         if (mcevt_pileUpType->at(genEventIdx) == 0 ||
             mcevt_pileUpType->at(genEventIdx) == 1 ) {
-          //Then require at least 2 tracks within acceptance
+          // Count nTracks within acceptance
           Int_t npacc(0); //n particles within acceptance
           for (int idxPart=0; idxPart < mcpart_n; idxPart++) {
             Double_t charge=0; // Charge. If not available do not count it
@@ -516,7 +530,7 @@ int VtxTmAlg::isGoodGenVertex(int vertexToCheck, int runNumber, long evtNumber) 
               npacc++;
             }
           }
-          if (npacc >= minNGoodTracks) {
+	        if (npacc >= minNGoodTracks) {
             isGood=true;
           }
         }

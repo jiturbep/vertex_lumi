@@ -141,4 +141,32 @@ TH3F* HistogramHelper::define3DHistogram(TString name,
   return histogram;
 }
 
+TProfile* HistogramHelper::defineProfile(TString name,
+                                    unsigned int xbins, Double_t lxbin, Double_t uxbin,
+                                    Double_t lybin, Double_t uybin,
+                                    TString xaxistitle, TString yaxistitle,
+                                    bool save, TString save_name) {
+  
+  TProfile *histogram = new TProfile( (save_name==""?name:save_name), name, xbins, lxbin, uxbin, lybin, uybin );
+
+  TAxis* xaxis = histogram->GetXaxis();
+  xaxis->SetTitle(xaxistitle);
+  TAxis* yaxis = histogram->GetYaxis();
+  yaxis->SetTitle(yaxistitle);
+
+  if (save) {
+    std::string newname;
+    if (save_name == "") { //use name as default save name
+      newname = name.Data();
+    } else {
+      newname = save_name.Data();
+    }
+
+    //storageHistQueue.insert( pair<string, pair<string, TH1*> >(newname,
+      //                       pair<string, TH1* >(string("TH2F*"), dynamic_cast<TH1*>(histogram))) );
+    histQueue.push_back( dynamic_cast<TH1*>(histogram) );
+  }
+  return histogram;
+}
+
 

@@ -6,6 +6,7 @@ GRLWrapper::GRLWrapper( const std::string &GRLxmlPath ) : m_reader(0), m_list(0)
   std::cout << "GoodRunsLists: using file " << GRLxmlPath << std::endl;
   m_reader->SetXMLFile(GRLxmlPath.c_str());
   m_reader->Interpret();
+  std::cout << "Line 9" << std::endl;
   m_list = new Root::TGoodRunsList((m_reader->GetMergedGoodRunsList()));
   m_list->Summary(false);
 }
