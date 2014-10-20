@@ -43,8 +43,8 @@ PileupMaskingCorrection::PileupMaskingCorrection(TH1D *h1, TString string1) {
   finished = false;
   max_dz = 300.;
   do_ll = true;
-  MaxNGenInt = 110; //Old
-  //MaxNGenInt = 100; // High Mu sample MC
+  //MaxNGenInt = 110; //Old
+  MaxNGenInt = 100; // High Mu sample MC
   //MaxNGenInt = 40; //Low Mu sample MC
 
   TString hname = "h_dz";
@@ -792,6 +792,7 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
     //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
     //mumax = 22; // Maximum value of ei_actualIntPerXing for the low mu sample
     mumax = 71; // Maximum value of ei_actualIntPerXing for the high mu sample
+    mumax = 80; // Maximum value of ei_actualIntPerXing for the high mu sample
   }
 
   cout << "[PileupMaskingCorrection] DEBUG : mumax = " << mumax << endl;

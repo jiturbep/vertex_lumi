@@ -624,6 +624,7 @@ int main(int argc, char **argv) {
         h_dz_rebinned[*nTrkCut][*bcid] = (TH1D*)pmc[*nTrkCut][*bcid]->h_dz_rebinned;
         h_dz_rebinned[*nTrkCut][*bcid]->GetXaxis()->SetTitle("#Deltaz (mm)");
         h_dz_rebinned[*nTrkCut][*bcid]->SetMaximum(h_dz_rebinned[*nTrkCut][*bcid]->GetMaximum() * 1.15);
+        h_dz_rebinned[*nTrkCut][*bcid]->GetXaxis()->SetRangeUser(-300,300);
         h_dz_rebinned[*nTrkCut][*bcid]->Draw("hist func");
         name = "fit_gaussian_excluded_BCID"; name += *bcid; name += "_NTrkCut"; name += *nTrkCut;
         TF1 *fit = (TF1*)h_dz_rebinned[*nTrkCut][*bcid]->GetFunction(name);
@@ -896,6 +897,7 @@ int main(int argc, char **argv) {
       l_dz[*nTrkCut]->SetBorderSize(1);
       h_dz_rebinned[*nTrkCut] = (TH1D*)pmc[*nTrkCut]->h_dz_rebinned;
       h_dz_rebinned[*nTrkCut]->GetXaxis()->SetTitle("#Deltaz (mm)");
+      h_dz_rebinned[*nTrkCut]->GetXaxis()->SetRangeUser(-300,300);
       h_dz_rebinned[*nTrkCut]->Draw("hist func");
       name = "fit_gaussian_excluded_NTrk"; name += *nTrkCut;
       TF1 *fit = (TF1*)h_dz_rebinned[*nTrkCut]->GetFunction(name);

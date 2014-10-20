@@ -152,9 +152,9 @@ int main(int argc, char **argv) {
   //nTrkColors[10] = kBlue+3;
   
 
-  Int_t mu_points = 2000;
+  Int_t mu_points = 1000;
   //Float_t mu_max = 22.; //maximun value of ei_actualIntPerXing variable in the low mu sample
-  Float_t mu_max = 71.; //maximun value of ei_actualIntPerXing variable in the high mu sample
+  Float_t mu_max = 80.; //maximun value of ei_actualIntPerXing variable in the high mu sample
 
   std::map<Int_t, TH1D*> h_NTrig_NGenInt, h_z;
   std::map<Int_t, TH1D*> h_fakes_NGenInt, h_recon_NGenInt;
@@ -213,7 +213,6 @@ int main(int argc, char **argv) {
     mu_limit = 100; // Both samples
     cout << "[initializeFakeCorr] DEBUG: Restricting mu" << endl;
     cout << "mu_limit = " << mu_limit << ", mu_max = " << mu_max << endl;
-    cout << "h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() = " << h_mu_fake_NGenInt[*nTrkCut]->GetNbinsX() << endl;
 
     hname = "h_mu_recon_NGenInt_NTrk"; hname += *nTrkCut;
     h_mu_recon_NGenInt[*nTrkCut] = (TH1D*)h_recon_NGenInt[*nTrkCut]->Clone();
@@ -276,8 +275,9 @@ int main(int argc, char **argv) {
       Float_t average_mu_recon_err = 0;
 
       if (current_mu > mu_limit) break;
- 
+      
       for (int j = 1; j <= h_mu_recon_NGenInt[*nTrkCut]->GetNbinsX(); j++) {
+      //for (int j = 1; j <= 50; j++) {
         Int_t current_NGenInt = TMath::Nint(h_mu_recon_NGenInt[*nTrkCut]->GetBinCenter(j));
         Float_t poisson_factor = TMath::Exp(-1. * current_mu) * TMath::Power(current_mu, current_NGenInt) / TMath::Factorial(current_NGenInt);
 
@@ -315,8 +315,6 @@ int main(int argc, char **argv) {
       pmc[*nTrkCut]->GenerateCorrection(pmc[*nTrkCut]->GetExpectedDzDistribution());
     }
 
-    cout << "[initializeFakeCorrection] INFO: tg_mu_fake_mu[*nTrkCut]->GetXaxis()->GetXmax() " << tg_mu_fake_mu[*nTrkCut]->GetXaxis()->GetXmax() << endl;
-
     for (int i = 1; i <= mu_points; i++) {
 
       Float_t current_mu_inel = tg_mu_fake_mu[*nTrkCut]->GetX()[i-1];
@@ -336,7 +334,7 @@ int main(int argc, char **argv) {
       Float_t current_MuReconMC = current_mu_recon * masking_correction_factor;
       Float_t current_MuReconMC_err = current_mu_recon_err * masking_correction_factor;
 
-      cout << i << ", mu_inel=" << current_mu_inel << ", mu_fake=" << current_mu_fake << ", mu_recon=" << current_mu_recon << ", mcf=" << masking_correction_factor << ", MuReconMC=" << current_MuReconMC << endl;
+      cout << "Point: " << i << ", mu_inel=" << current_mu_inel << ", mu_fake=" << current_mu_fake << ", mu_recon=" << current_mu_recon << ", mcf=" << masking_correction_factor << ", MuReconMC=" << current_MuReconMC << endl;
 
       tg_mu_fake_MuReconMC[*nTrkCut]->SetPoint(i-1, current_MuReconMC, current_mu_fake);
       tg_mu_fake_MuReconMC[*nTrkCut]->SetPointError(i-1, current_MuReconMC_err, current_mu_fake_err);
@@ -763,7 +761,9 @@ int main(int argc, char **argv) {
 
   // Make canvases
   PlotNTrkGraphs(&h_mu_fake_NGenInt, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag);
+  PlotNTrkGraphs(&h_mu_recon_NGenInt, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag);
   PlotNTrkGraphs(&tg_mu_fake_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{inel}", "#mu_{fake}");
+  PlotNTrkGraphs(&tg_mu_recon_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{inel}", "#mu_{rec}");
   PlotNTrkGraphs(&tg_fake_fraction_MuReconMC, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{rec} * f_{mask}(#mu_{rec})", "Fake fraction");
   PlotNTrkGraphs(&tg_mu_fake_MuReconMC, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{rec} * f_{mask}(#mu_{rec})", "#mu_{fake}");
   // Write TGraphs to cache
@@ -1003,6 +1003,7 @@ TCanvas* PlotNTrkGraphs(std::map<Int_t, TH1D*> *graphs, TString legend_prefix, b
       y_title = (*graph).second->GetYaxis()->GetTitle();
     }
 
+    cout << "(*graph).second->GetNbinsX() = " << (*graph).second->GetNbinsX() << endl;  
     for (int i = 1; i <= (*graph).second->GetNbinsX(); i++) {
       Double_t c_xmin = (*graph).second->GetXaxis()->GetXmin();
       Double_t c_xmax = (*graph).second->GetXaxis()->GetXmax();
@@ -1014,6 +1015,11 @@ TCanvas* PlotNTrkGraphs(std::map<Int_t, TH1D*> *graphs, TString legend_prefix, b
       if (y + ey > ymax) ymax = y + ey;
       if (y - ey < ymin) ymin = y - ey;
     }
+    //Hard coded for the purposes of the note
+//    xmin = -0.5;
+//    xmax = 80.5;
+//    ymin = -0.1;
+//    ymax = 3.5;
   }
 
   TH1F *frame = new TH1F("frame", "frame", 100, xmin - 0.05 * (xmax - xmin), xmax + 0.4 * (xmax - xmin));
