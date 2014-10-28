@@ -1043,7 +1043,7 @@ void VanDerMeerAnalysis::InitializeMaskingCorrection(TString p_energy, TString p
 #endif
 
 
-void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, TString p_settings, Int_t p_ntrkcut, TString p_run) {
+void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, TString p_settings, Int_t p_ntrkcut, TString p_run, Int_t p_bcid) {
 
   /**
     *  New method as of 5-16-12: need to calculate a unique masking correction for each plb.
@@ -1064,6 +1064,7 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
     Double_t mu_raw = mu_pLB[*it];
     Double_t initial_masking_correction_factor = 1.;
     PileupMaskingCorrection *mc;
+    mu_raw_pLB[*it] = mu_pLB[*it];
 
     if (vtx_method == "Vtx") {
       TString p_tag = "data_";
@@ -1073,7 +1074,8 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       p_tag += "_";
       p_tag += p_run;
 
-      mc = new PileupMaskingCorrection(p_tag, p_ntrkcut);
+      //mc = new PileupMaskingCorrection(p_tag, p_ntrkcut);
+      mc = new PileupMaskingCorrection(p_tag, p_ntrkcut, p_bcid, true);
       if (systematic_uncertainty_list["masking_toy_scaling"]) {
         mc->SetPmaskScale(0.98);
       }
@@ -1089,9 +1091,10 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       pmc_tag += p_ntrkcut;
       pmc_tag += "_";
       pmc_tag += *it;
-      mc->GenerateDzDistribution(h_z, pmc_tag);
-      mc->GenerateCorrection(mc->GetExpectedDzDistribution());
+      //mc->GenerateDzDistribution(h_z, pmc_tag);
+      //mc->GenerateCorrection(mc->GetExpectedDzDistribution());
       initial_masking_correction_factor = mc->GetCorrectionFactor(mu_raw);
+      cout << "[VanDerMeerAnalysis] INFO : mu_raw = " << mu_raw << " imcf = " << initial_masking_correction_factor << endl;
 
 //      // Load PileupMaskingCorrection factors from cached file
 //      PileupMaskingCorrection mc(p_tag, p_ntrkcut);
@@ -1118,6 +1121,7 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       }
 
       Double_t mu_real = mu_raw - mu_fake;
+      mu_real_pLB[*it] = mu_real;
 
       Double_t final_masking_correction_factor = 1.;
       if (vtx_method == "Vtx") {
@@ -2948,7 +2952,7 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
 
   TFile *f_debug = new TFile(p_path, "UPDATE");
 
-  std::map<TString, TGraphErrors*> tg_n_vtx, tg_mu, tg_mu_fake, tg_masking_correction_factors;
+  std::map<TString, TGraphErrors*> tg_n_vtx, tg_mu, tg_mu_fake, tg_masking_correction_factors, tg_mu_corr_fake, tg_mu_corr_mask, tg_mu_corr_total, tg_mask_corr;
 
   TString name;
 
@@ -2973,6 +2977,26 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
   tg_masking_correction_factors["x"] = new TGraphErrors(plb_list_x.size());
   tg_masking_correction_factors["x"]->SetName(name);
 
+  name = "tg_mu_corr_total_x";
+  name += p_tag;
+  tg_mu_corr_total["x"] = new TGraphErrors(plb_list_x.size());
+  tg_mu_corr_total["x"]->SetName(name);
+
+  name = "tg_mu_corr_fake_x";
+  name += p_tag;
+  tg_mu_corr_fake["x"] = new TGraphErrors(plb_list_x.size());
+  tg_mu_corr_fake["x"]->SetName(name);
+
+  name = "tg_mu_corr_mask_x";
+  name += p_tag;
+  tg_mu_corr_mask["x"] = new TGraphErrors(plb_list_x.size());
+  tg_mu_corr_mask["x"]->SetName(name);
+
+  name = "tg_mask_corr_x";
+  name += p_tag;
+  tg_mask_corr["x"] = new TGraphErrors(plb_list_x.size());
+  tg_mask_corr["x"]->SetName(name);
+
   for (unsigned int i=0; i<plb_list_x.size(); i++) {
     Int_t current_pLB = plb_list_x[i];
 
@@ -2985,7 +3009,15 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
     tg_mu_fake["x"]->SetPoint(i, nominal_separation[current_pLB], mu_fake_list[current_pLB]);
     tg_mu_fake["x"]->SetPointError(i, 0., mu_fake_uncertainty_list[current_pLB]);
 
+    tg_mask_corr["x"]->SetPoint(i, mu_raw_pLB[current_pLB], masking_correction_factors[current_pLB]);
+
     tg_masking_correction_factors["x"]->SetPoint(i, nominal_separation[current_pLB], masking_correction_factors[current_pLB]);
+    cout << "mu_raw = " << mu_raw_pLB[current_pLB] << ", fake correction (%) = " << (mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100 << endl;
+    tg_mu_corr_fake["x"]->SetPoint(i,mu_raw_pLB[current_pLB],(mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100);
+    cout << "mu_real = " << mu_real_pLB[current_pLB] << ", masking correction (%) = " << (1-masking_correction_factors[current_pLB])*100 << endl;
+    tg_mu_corr_mask["x"]->SetPoint(i,mu_real_pLB[current_pLB],(1-masking_correction_factors[current_pLB])*100);
+    cout << "Total correction for this mu_raw is (%) = " << ((mu_raw_pLB[current_pLB]-mu_pLB[current_pLB])/mu_raw_pLB[current_pLB])*100 << endl;
+    tg_mu_corr_total["x"]->SetPoint(i, mu_raw_pLB[current_pLB], ((mu_raw_pLB[current_pLB]-mu_pLB[current_pLB])/mu_raw_pLB[current_pLB])*100);
   }
 
   tg_n_vtx["x"]->Write();
@@ -2993,6 +3025,10 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
   tg_musp_x->Write();
   tg_mu_fake["x"]->Write();
   tg_masking_correction_factors["x"]->Write();
+  tg_mu_corr_fake["x"]->Write();
+  tg_mu_corr_mask["x"]->Write();
+  tg_mu_corr_total["x"]->Write();
+  tg_mask_corr["x"]->Write();
 
   // y
   name = "tg_n_vtx_y";
@@ -3028,6 +3064,7 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
     tg_mu_fake["y"]->SetPointError(i, nominal_separation[current_pLB], mu_fake_uncertainty_list[current_pLB]);
 
     tg_masking_correction_factors["y"]->SetPoint(i, nominal_separation[current_pLB], masking_correction_factors[current_pLB]);
+
   }
 
   tg_n_vtx["y"]->Write();

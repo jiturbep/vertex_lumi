@@ -451,6 +451,102 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut)
 
 }
 
+PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut, Int_t bcid, bool vdmscan) {
+
+  cout << "[PileupMaskingCorrection] INFO : Initializing PileupMaskingCorrection for VdM scan (load cache method)" << endl;
+
+  redo_cache = false;
+  finished = false;
+  pmask_available = true;
+
+  std::vector<TString> mc_samples;
+  mc_samples.push_back("mc_7TeV_16.X_normal_pythia6_pu");
+  mc_samples.push_back("mc_7TeV_16.X_hybrid_pythia6_pu");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia6_pu");
+  mc_samples.push_back("mc_7TeV_17.2_VtxLumi_pythia6_pu");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia8_pu");
+  mc_samples.push_back("mc_7TeV_17.2_VtxLumi_pythia8_pu");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia6_pu_noslim");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia8DL_pu");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia8DL_pu_noslim");
+  mc_samples.push_back("mc_8TeV_17.2_normal_pythia8_pu");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_pythia8_pu");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_2newsets");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_2newsets_10Dec");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax20");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_mumax75");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia8_pu_bs45");
+  mc_samples.push_back("mc_7TeV_17.2_VtxLumi_pythia8_pu_bs45");
+  mc_samples.push_back("mc_7TeV_17.2_normal_pythia8_pu_bs55");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_BothSamples");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_LowMuSample");
+  mc_samples.push_back("mc_8TeV_17.2_VtxLumi_HighMuSample");
+
+  std::vector<TString> data_samples;
+  data_samples.push_back("data_7TeV_17.2-normal");
+  data_samples.push_back("data_8TeV_17.2-normal");
+  data_samples.push_back("data_7TeV_17.2-VtxLumi");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_201351");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_201351_26Nov");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_207216");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_207219");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_214984");
+  data_samples.push_back("data_8TeV_17.2-VtxLumi_215021");
+
+  if ((find(mc_samples.begin(), mc_samples.end(), p_tag) == mc_samples.end()) && (find(data_samples.begin(), data_samples.end(), p_tag) == data_samples.end())) {
+    cerr << "[PileupMaskingCorrection] ERROR : Requested PMC tag " << p_tag << " not recognized. Exiting..." << endl;
+    exit(1);
+  }
+
+  TString sample;
+  if (p_tag == "data_7TeV_17.2-normal") {
+    sample = "data_7TeV_17.2_normal";
+  } else if (p_tag == "data_7TeV_17.2-VtxLumi") {
+    sample = "data_7TeV_17.2_VtxLumi";
+  } else if (p_tag == "data_8TeV_17.2-normal") {
+    sample = "data_8TeV_17.2_normal";
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi") {
+    sample = "data_8TeV_17.2_VtxLumi";
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351") {
+    sample = "data_8TeV_17.2_VtxLumi_207216"; //Use July to extract the masking correction since it doesn't work on April
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351_26Nov") {
+    sample = "data_8TeV_17.2_VtxLumi_201351_26Nov";
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_207216") {
+    sample = "data_8TeV_17.2_VtxLumi_207216";
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_207219") {
+    sample = "data_8TeV_17.2_VtxLumi_207219";  
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_214984") {
+    sample = "data_8TeV_17.2_VtxLumi_214984";
+  } else if (p_tag == "data_8TeV_17.2-VtxLumi_215021") {
+    sample = "data_8TeV_17.2_VtxLumi_215021";
+  } else {
+    sample = p_tag;
+  }
+
+  TString path = GlobalSettings::path_maskingCorrection;
+  path += "/";
+  path += sample;
+  path += "/pmask_cache.root";
+
+  cout << "[PileupMaskingCorrection] INFO : Loading cache from " << path << endl;
+
+  TFile *f_in = new TFile(path, "READ");
+  TString pileup_correction_name = "tg_pileup_correction_BCID";
+  pileup_correction_name += bcid;
+  pileup_correction_name += "_NTrkCut";
+  pileup_correction_name += p_ntrkcut;
+  tg_pileup_correction = (TGraphErrors*)f_in->Get(pileup_correction_name);
+  if (tg_pileup_correction) {
+    cout << "[PileupMaskingCorrection] INFO : tg_pileup_correction->GetN() " << tg_pileup_correction->GetN() << endl; 
+  } else {
+    cerr << "[PileupMaskingCorrection] ERROR : Could not find tgraph " << pileup_correction_name << " in file " << path << ". Exiting..." << endl;
+    exit(1);
+  }
+  f_in->Close();
+
+}
+
 #ifdef REMOVED_061412
 PileupMaskingCorrection::PileupMaskingCorrection(TString p_source, TString p_energy, TString p_settings, TString p_ntrkcut) {
 
@@ -782,17 +878,19 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
   cout << "[PileupMaskingCorrection] DEBUG : MakePuCorrTGraphs()" << endl;
 	#endif
 
-  Double_t n_points = 400;
+  Double_t n_points = 0;
   Double_t mumax = 0.;
 
   if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
     mumax = 30; 
+    n_points = 1200;
   } else{
     //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
     //mumax = 22; // Maximum value of ei_actualIntPerXing for the low mu sample
     mumax = 71; // Maximum value of ei_actualIntPerXing for the high mu sample
-    mumax = 80; // Maximum value of ei_actualIntPerXing for the high mu sample
+    mumax = 80; 
+    n_points = 3200;
   }
 
   cout << "[PileupMaskingCorrection] DEBUG : mumax = " << mumax << endl;
@@ -839,7 +937,7 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
         tg_pileup_correction->SetPoint(i, current_mu_obs, current_mu_actual / current_mu_obs);
         tg_pileup_correction->SetPointError(i, 0., ( current_mu_obs_err * current_mu_actual / ( current_mu_obs * current_mu_obs ) ) ); 
       } else {
-        tg_pileup_correction->SetPoint(i, current_mu_obs, 0.);
+        tg_pileup_correction->SetPoint(i, current_mu_obs, 1.); //This should be 1 I think (it was 0), the correction should start at 1 
         tg_pileup_correction->SetPointError(i, 0., 0.);
       }
     } else {
@@ -862,6 +960,8 @@ void PileupMaskingCorrection::Save(TString path_rootfile, TString suffix, bool n
     cerr << "Run the calculations before trying to save!" << endl;
     exit(1);
   }
+
+  cout << "[PileupMaskingCorrection] DEBUG : path_rootfile = " << path_rootfile << ", suffix = " << suffix << endl;
 
   if (!redo_cache) {
     return;

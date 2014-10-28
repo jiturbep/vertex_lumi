@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
 
   Int_t mu_points = 1000;
   //Float_t mu_max = 22.; //maximun value of ei_actualIntPerXing variable in the low mu sample
-  Float_t mu_max = 80.; //maximun value of ei_actualIntPerXing variable in the high mu sample
+  Float_t mu_max = 80.; // maximum value of mu reconstructible, the one used as a mean of the poisson distribution when doing the smearing JI
 
   std::map<Int_t, TH1D*> h_NTrig_NGenInt, h_z;
   std::map<Int_t, TH1D*> h_fakes_NGenInt, h_recon_NGenInt;
@@ -165,6 +165,7 @@ int main(int argc, char **argv) {
   std::map<Int_t, PileupMaskingCorrection*> pmc;
 
   bool draw_first = true;
+  bool first = true;
 
   for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 
@@ -233,7 +234,7 @@ int main(int argc, char **argv) {
     tgname = "tg_mu_fake_mu_NTrk"; tgname += *nTrkCut;
     tg_mu_fake_mu[*nTrkCut] = new TGraphErrors(mu_points);
     tg_mu_fake_mu[*nTrkCut]->SetName(tgname);
-    tg_mu_fake_mu[*nTrkCut]->GetHistogram()->GetXaxis()->SetTitle("#mu_{inel}");
+    tg_mu_fake_mu[*nTrkCut]->GetHistogram()->GetXaxis()->SetTitle("#mu");
     tg_mu_fake_mu[*nTrkCut]->GetHistogram()->GetYaxis()->SetTitle("#mu_{fake}");
 
     for (int i = 1; i <= mu_points; i++) {
@@ -266,7 +267,7 @@ int main(int argc, char **argv) {
     tgname = "tg_mu_recon_mu_NTrk"; tgname += *nTrkCut;
     tg_mu_recon_mu[*nTrkCut] = new TGraphErrors(mu_points);
     tg_mu_recon_mu[*nTrkCut]->SetName(tgname);
-    tg_mu_recon_mu[*nTrkCut]->GetHistogram()->GetXaxis()->SetTitle("#mu_{inel}");
+    tg_mu_recon_mu[*nTrkCut]->GetHistogram()->GetXaxis()->SetTitle("#mu");
     tg_mu_recon_mu[*nTrkCut]->GetHistogram()->GetYaxis()->SetTitle("#mu_{rec}");
 
     for (int i = 1; i <= mu_points; i++) {
@@ -313,6 +314,15 @@ int main(int argc, char **argv) {
     if (*nTrkCut != 2) {
       pmc[*nTrkCut]->GenerateDzDistribution(h_z[*nTrkCut]);
       pmc[*nTrkCut]->GenerateCorrection(pmc[*nTrkCut]->GetExpectedDzDistribution());
+    }
+
+    //Drawing results from masking correction
+    cout << "Drawing the results from the masking correction in " << GlobalSettings::path_fakeCorrection << TString("/") << output_prefix << TString("/pmask_cache.root") << endl;
+    if (first) {
+      first = false;
+      pmc[*nTrkCut]->Save(GlobalSettings::path_fakeCorrection + TString("/") + output_prefix + TString("/pmask_cache.root"), "NTrk" + TString(*nTrkCut), true);
+    } else {
+      pmc[*nTrkCut]->Save(GlobalSettings::path_fakeCorrection + TString("/") + output_prefix + TString("/pmask_cache.root"), "NTrk" + TString(*nTrkCut), false);
     }
 
     for (int i = 1; i <= mu_points; i++) {
@@ -762,8 +772,8 @@ int main(int argc, char **argv) {
   // Make canvases
   PlotNTrkGraphs(&h_mu_fake_NGenInt, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag);
   PlotNTrkGraphs(&h_mu_recon_NGenInt, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag);
-  PlotNTrkGraphs(&tg_mu_fake_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{inel}", "#mu_{fake}");
-  PlotNTrkGraphs(&tg_mu_recon_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{inel}", "#mu_{rec}");
+  PlotNTrkGraphs(&tg_mu_fake_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu", "#mu_{fake}");
+  PlotNTrkGraphs(&tg_mu_recon_mu, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu", "#mu_{rec}");
   PlotNTrkGraphs(&tg_fake_fraction_MuReconMC, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{rec} * f_{mask}(#mu_{rec})", "Fake fraction");
   PlotNTrkGraphs(&tg_mu_fake_MuReconMC, "NTrk", true, GlobalSettings::path_fakeCorrection + TString("/") + tag, "#mu_{rec} * f_{mask}(#mu_{rec})", "#mu_{fake}");
   // Write TGraphs to cache

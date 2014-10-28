@@ -66,6 +66,7 @@ class PileupMaskingCorrection {
     PileupMaskingCorrection(TString p_source, TString p_energy, TString p_settings, TString p_ntrkcut);
 #endif
     PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut);
+    PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut, Int_t bcid, bool vdmscan);
     ~PileupMaskingCorrection(); // destructor
     
     //Objects

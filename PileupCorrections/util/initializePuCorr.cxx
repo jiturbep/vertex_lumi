@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
     input_type = "data";
     data_run = "215021";
     //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_102.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-215021/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results.root";
   } else {
     cerr << "Input not recognized: " << tag << ". Exiting..." << endl;
     exit(1);
@@ -480,6 +480,7 @@ int main(int argc, char **argv) {
         
         TString name = "hist/VtxDzTightTight_pLB_"; name += tag1;
         TH2D *h2 = (TH2D*)f_in->Get(name);
+        cout << "[initializePuCorr] VtxDzTightTight has " << h2->GetEntries() << "entries." << endl;
                     
         TString tag = "BCID"; tag += *bcid; tag += "_NTrkCut"; tag += *nTrkCut;
       
@@ -690,8 +691,7 @@ int main(int argc, char **argv) {
       TFile *f_deltaz;
       f_deltaz = new TFile(path_deltaz,"RECREATE");
       cout << "[initializePuCorr] DEBUG: MaxNGenInt = " << MaxNGenInt << endl;
-      //Given the statistics of the MC sample, I create the delta z distribution by adding all the delta z distributions per ngenint weigthed by their integral
-      for (Int_t current_ngenint = 2; current_ngenint < 11; current_ngenint++) {
+      for (Int_t current_ngenint = 2; current_ngenint <11; current_ngenint++) {
         Int_t bin = h_dz_NGenInt->GetYaxis()->FindBin(current_ngenint);
         TString tmpname = "h_dz_NGenInt"; tmpname += current_ngenint; tmpname += "_NTrk"; tmpname += *nTrkCut;
         TH1D *h_tmp = (TH1D*)h_dz_NGenInt->ProjectionX(tmpname, bin, bin);

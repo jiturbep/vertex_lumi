@@ -93,9 +93,13 @@ class VanDerMeerAnalysis {
     void CalculateMuPlb(); // Convert vertex counts to average mu per pLB, using pLB timestamps and deadtimes.
     std::map<Int_t, Double_t> mu_pLB;
     std::map<Int_t, Double_t> mu_err_pLB;
+    std::map<Int_t, Double_t> mu_raw_pLB;
+    std::map<Int_t, Double_t> mu_raw_err_pLB;
+    std::map<Int_t, Double_t> mu_real_pLB;
+    std::map<Int_t, Double_t> mu_real_err_pLB;
 
     void InitializeFakeCorrection(TString p_energy, TString p_settings, Int_t p_ntrkcut);
-    void CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, TString p_settings, Int_t p_ntrkcut, TString p_run);
+    void CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, TString p_settings, Int_t p_ntrkcut, TString p_run, Int_t p_bcid);
 #ifdef REMOVED_051612
     void InitializeMaskingCorrection(TString p_energy, TString p_settings, Int_t p_ntrkcut, TH1D *h_z, TString save_tag);
     void InitializeMaskingCorrection(TString p_energy, TString p_settings, Int_t p_ntrkcut, TString save_tag);
