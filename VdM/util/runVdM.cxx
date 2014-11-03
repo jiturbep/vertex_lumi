@@ -139,8 +139,8 @@ int main(int argc, char **argv) {
   //}
   //nTrkCuts.push_back(2);
   nTrkCuts.push_back(3);
-  //nTrkCuts.push_back(4);
-  //nTrkCuts.push_back(5);
+  nTrkCuts.push_back(4);
+  nTrkCuts.push_back(5);
   //nTrkCuts.push_back(6);
   //nTrkCuts.push_back(7);
   //nTrkCuts.push_back(8);
@@ -334,8 +334,8 @@ int main(int argc, char **argv) {
     cout << "[RunVdM] INFO : Starting VdM analysis of run 215021" << endl;
 
     bcidList.push_back(1);
-    //bcidList.push_back(2361);
-    //bcidList.push_back(2881);
+    bcidList.push_back(2361);
+    bcidList.push_back(2881);
 
     scans.push_back(15);
 

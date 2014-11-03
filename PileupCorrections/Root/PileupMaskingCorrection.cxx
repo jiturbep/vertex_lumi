@@ -405,7 +405,7 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut)
   } else if (p_tag == "data_8TeV_17.2-VtxLumi") {
     sample = "data_8TeV_17.2_VtxLumi";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351") {
-    sample = "data_8TeV_17.2_VtxLumi_207216"; //Use July to extract the masking correction since it doesn't work on April
+    sample = "data_8TeV_17.2_VtxLumi_201351"; // Not for the moment //Use July to extract the masking correction since it doesn't work on April
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351_26Nov") {
     sample = "data_8TeV_17.2_VtxLumi_201351_26Nov";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_207216") {
@@ -509,7 +509,7 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut,
   } else if (p_tag == "data_8TeV_17.2-VtxLumi") {
     sample = "data_8TeV_17.2_VtxLumi";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351") {
-    sample = "data_8TeV_17.2_VtxLumi_207216"; //Use July to extract the masking correction since it doesn't work on April
+    sample = "data_8TeV_17.2_VtxLumi_201351"; // Not now//Use July to extract the masking correction since it doesn't work on April
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_201351_26Nov") {
     sample = "data_8TeV_17.2_VtxLumi_201351_26Nov";
   } else if (p_tag == "data_8TeV_17.2-VtxLumi_207216") {

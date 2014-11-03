@@ -1059,7 +1059,13 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
 
   for (vector<Int_t>::iterator it = plb_list.begin(); it != plb_list.end(); ++it) {
 
+    cout << endl;
+    cout << endl;
+    cout << "///////////////////////////////////////////////////////////" << endl;
     cout << "[VanDerMeerAnalysis] INFO : On " << p_energy << " TeV, " << p_settings << ", NTrk" << p_ntrkcut << ", pLB " << *it << endl;
+    cout << "///////////////////////////////////////////////////////////" << endl;
+    cout << endl;
+    cout << endl;
 
     Double_t mu_raw = mu_pLB[*it];
     Double_t initial_masking_correction_factor = 1.;
@@ -1074,15 +1080,22 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       p_tag += "_";
       p_tag += p_run;
 
+      Int_t bin = h_z_plb->GetYaxis()->FindBin(*it);
+      TString hname = "h_z_plb";
+      hname += *it;
+      TH1D *h_z = (TH1D*)h_z_plb->ProjectionX(hname, bin, bin);
+      cout << "[VanDerMeerAnalysis] INFO : Writting h_z_plb histogram into root file" << endl;
+      TFile *f_z_plb = new TFile(hname+".root", "new");
+      h_z->Write();
+      f_z_plb->Close();
+
+      cout << "[VanDerMeerAnalysis] INFO : h_z RMS = " << h_z->GetRMS() << endl;
+
       //mc = new PileupMaskingCorrection(p_tag, p_ntrkcut);
       mc = new PileupMaskingCorrection(p_tag, p_ntrkcut, p_bcid, true);
       if (systematic_uncertainty_list["masking_toy_scaling"]) {
         mc->SetPmaskScale(0.98);
       }
-      Int_t bin = h_z_plb->GetYaxis()->FindBin(*it);
-      TString hname = "h_z_plb";
-      hname += *it;
-      TH1D *h_z = (TH1D*)h_z_plb->ProjectionX(hname, bin, bin);
       TString pmc_tag = "";
       pmc_tag += p_energy;
       pmc_tag += "_";
@@ -1094,11 +1107,12 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       //mc->GenerateDzDistribution(h_z, pmc_tag);
       //mc->GenerateCorrection(mc->GetExpectedDzDistribution());
       initial_masking_correction_factor = mc->GetCorrectionFactor(mu_raw);
-      cout << "[VanDerMeerAnalysis] INFO : mu_raw = " << mu_raw << " imcf = " << initial_masking_correction_factor << endl;
+      cout << "[VanDerMeerAnalysis] INFO : mu_raw = " << mu_raw << endl;
+      cout << "[VanDerMeerAnalysis] INFO : imcf = " << initial_masking_correction_factor << endl;
 
-//      // Load PileupMaskingCorrection factors from cached file
-//      PileupMaskingCorrection mc(p_tag, p_ntrkcut);
-//      initial_masking_correction_factor = mc.GetCorrectionFactor(mu_raw);
+      // // Load PileupMaskingCorrection factors from cached file
+      // PileupMaskingCorrection mc(p_tag, p_ntrkcut);
+      // initial_masking_correction_factor = mc.GetCorrectionFactor(mu_raw);
       
       if (initial_masking_correction_factor < 1.) {
         cout << "[VanDerMeerAnalysis] WARNING : pLB " << *it << " has initial masking correction factor " << initial_masking_correction_factor << " < 1. Setting to 1." << endl;
@@ -1123,6 +1137,9 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       Double_t mu_real = mu_raw - mu_fake;
       mu_real_pLB[*it] = mu_real;
 
+      cout << "[VanDerMeerAnalysis] INFO : mu_fake = " << mu_fake << endl;
+      cout << "[VanDerMeerAnalysis] INFO : mu_real = " << mu_real << endl;
+
       Double_t final_masking_correction_factor = 1.;
       if (vtx_method == "Vtx") {
         final_masking_correction_factor = mc->GetCorrectionFactor(mu_real);
@@ -1138,6 +1155,9 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
 
       mu_fake_list[*it] = mu_fake;
       masking_correction_factors[*it] = final_masking_correction_factor;
+
+      cout << "[VanDerMeerAnalysis] INFO : fmcf = " << final_masking_correction_factor << endl;
+      cout << "[VanDerMeerAnalysis] INFO : mu_vis = " << mu_pLB[*it] << endl;
 
     } else if (vtx_method == "NEvt") {
 
@@ -1155,7 +1175,7 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
     }
   }
 
-#ifdef REMOVED_051612
+  #ifdef REMOVED_051612
   Double_t old_mu = mu_pLB[*it];
   //if (old_mu < 0.05) continue; // I don't think our corrections are well-understood in this region.
 
@@ -1175,8 +1195,8 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
   fake_fractions[*it] = fake_fraction;
   masking_correction_factors[*it] = masking_correction_factor;
 
-}
-#endif
+  }
+  #endif
 
 }
 

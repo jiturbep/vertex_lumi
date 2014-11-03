@@ -368,9 +368,9 @@ int main(int argc, char **argv) {
 
       for (vector<Int_t>::iterator current_pLB = pLB_list.begin(); current_pLB != pLB_list.end(); ++current_pLB) {     
         Int_t current_point = distance(pLB_list.begin(), current_pLB);
-        if ((current_point % 20) == 0) {
+        //if ((current_point % 20) == 0) {
           cout << "On point " << current_point << " / " << n_pLBs << endl;
-        }
+        //}
       
         TString tag = "BCID"; tag += *bcid; tag += "_pLB"; tag += *current_pLB;
         
@@ -393,6 +393,7 @@ int main(int argc, char **argv) {
         h_z_tmp->Fit(f_gaus, "QRE+");
         
         sigma_z[*bcid][*current_pLB] = f_gaus->GetParameter(2);
+        cout << "sigma_z["<<*bcid<<"]["<<*current_pLB<<"] = " << sigma_z[*bcid][*current_pLB] << endl;
         
         tg_sigma_z[*bcid]->SetPoint(current_point, *current_pLB, f_gaus->GetParameter(2));
         tg_sigma_z[*bcid]->SetPointError(current_point, 0, f_gaus->GetParError(2));
@@ -427,10 +428,12 @@ int main(int argc, char **argv) {
       h_z[*bcid] = new TH1D(name, name, h_z_plb_tmp->GetXaxis()->GetNbins(), h_z_plb_tmp->GetXaxis()->GetXmin(),h_z_plb_tmp->GetXaxis()->GetXmax());
     
       //Add up slices of the TH2D
+      cout << "[initializePuCorr] Add up slices of the TH2D to make z distribution histogram" << endl;
       for (vector<std::pair<Int_t, Int_t> >::iterator pLB_interval = good_pLBs.begin(); pLB_interval != good_pLBs.end(); ++pLB_interval) {
         Int_t bin1 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).first);
         Int_t bin2 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).second);
-        h_z[*bcid]->Add(h_z_plb_tmp->ProjectionX("tmp", bin1, bin2));
+        h_z[*bcid]->Add(h_z_plb_tmp->ProjectionX("tmp", bin1+10, bin2-10)); // Hack for April
+        cout << "bin1 = " << bin1 << ", bin2 = " << bin2 << "h_zRMS = " << h_z[*bcid]->GetRMS() << endl;
       }
       h_z[*bcid]->Sumw2();
 
