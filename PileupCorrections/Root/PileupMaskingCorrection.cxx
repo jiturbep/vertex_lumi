@@ -532,9 +532,7 @@ PileupMaskingCorrection::PileupMaskingCorrection(TString p_tag, Int_t p_ntrkcut,
   cout << "[PileupMaskingCorrection] INFO : Loading cache from " << path << endl;
 
   TFile *f_in = new TFile(path, "READ");
-  TString pileup_correction_name = "tg_pileup_correction_BCID";
-  pileup_correction_name += bcid;
-  pileup_correction_name += "_NTrkCut";
+  TString pileup_correction_name = "tg_masking_correction_NTrk";
   pileup_correction_name += p_ntrkcut;
   tg_pileup_correction = (TGraphErrors*)f_in->Get(pileup_correction_name);
   if (tg_pileup_correction) {
@@ -883,8 +881,8 @@ void PileupMaskingCorrection::MakePuCorrTGraphs() {
 
   if ( (is_MC == 0) ){
     //cout << "[PileupMaskingCorrection] INFO: DATA" << endl;
-    mumax = 30; 
-    n_points = 1200;
+    mumax = 40; 
+    n_points = 1600;
   } else{
     //cout << "[PileupMaskingCorrection] INFO: MC" << endl;
     //mumax = 22; // Maximum value of ei_actualIntPerXing for the low mu sample

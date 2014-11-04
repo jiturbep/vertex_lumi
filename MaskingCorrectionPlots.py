@@ -32,6 +32,7 @@ for sample in samples:
 
 	tgfile = ROOT.TFile(path+sample+"/"+rootfile,"READ")
 	for ntrk,color in zip(ntrks,colors):
+		print "NTrkCut", ntrk
 		if (sample.find("data")==-1):
 			tg_pu = tgfile.Get("tg_pileup_correction_NTrk"+ntrk)
 			tg_mu = tgfile.Get("tg_mu_obs_vs_mu_actual_NTrk"+ntrk)
@@ -43,6 +44,7 @@ for sample in samples:
 		tg_mu.SetMarkerColor(color)
 		print "Number of points =", tg_pu.GetN()
 		print "Evaluate tg_pu at 0",tg_pu.Eval(0)," and at 0.1", tg_pu.Eval(0.1)
+		print "Evaluate tg_mu at 0",tg_mu.Eval(0)," and at 0.1", tg_mu.Eval(0.1)
 
 		legend.AddEntry(tg_pu,"NTrk "+ntrk, "P")
 
@@ -68,19 +70,19 @@ for sample in samples:
 	tgs_mu[0].GetXaxis().SetRangeUser(mu_xmin,mu_xmax)
 	tgs_mu[0].GetYaxis().SetLabelSize(0.035)
 	tgs_mu[0].GetYaxis().SetTitleSize(0.035)
-	tgs_mu[0].GetYaxis().SetTitle("#mu_{obs}")
+	tgs_mu[0].GetYaxis().SetTitle("#mu_{rec}")
 	tgs_mu[0].GetYaxis().SetTitleOffset(1.)
-	tgs_mu[0].GetYaxis().SetRangeUser(mu_ymin,mu_ymax)
+	tgs_mu[0].GetYaxis().SetRangeUser(0,mu_ymax)
 
 	tgs_pu[0].SetTitle("")
 	tgs_pu[0].GetXaxis().SetLabelSize(0.035)
 	tgs_pu[0].GetXaxis().SetTitleSize(0.035)
-	tgs_pu[0].GetXaxis().SetTitle("#mu_{obs}")
+	tgs_pu[0].GetXaxis().SetTitle("#mu_{rec}")
 	tgs_pu[0].GetXaxis().SetTitleOffset(1.)
 	tgs_pu[0].GetXaxis().SetRangeUser(pu_xmin,pu_xmax)
 	tgs_pu[0].GetYaxis().SetLabelSize(0.035)
 	tgs_pu[0].GetYaxis().SetTitleSize(0.035)
-	tgs_pu[0].GetYaxis().SetTitle("#frac{#mu}{#mu_{obs}}")
+	tgs_pu[0].GetYaxis().SetTitle("#frac{#mu}{#mu_{rec}}")
 	tgs_pu[0].GetYaxis().SetTitleOffset(1.)
 	tgs_pu[0].GetYaxis().SetRangeUser(pu_ymin,pu_ymax)
 

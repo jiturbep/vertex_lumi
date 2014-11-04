@@ -47,6 +47,8 @@ for vdmset in vdmsets:
 					legend.SetHeader("        NTrkCut "+str(ntrk))
 					legend.SetFillColor(kWhite)
 					legend.SetTextSize(0.018)
+					res_topvalues = []
+					res_bottomvalues = []
 					topvalues = []
 					bottomvalues = []
 					for scan,color in zip(scans,colors):
@@ -83,6 +85,8 @@ for vdmset in vdmsets:
 						#graph_new.GetYaxis().SetTitleSize(0.025)
 						graph_new.GetYaxis().SetLabelSize(0.03)
 						graphs.append(graph_new)
+						topvalues.append(graph_new.GetYaxis().GetXmax())
+						bottomvalues.append(graph_new.GetYaxis().GetXmin())
 						legend.AddEntry(graph_new,"Scan "+str(scan)+" data","P")
 						legend.AddEntry(fit, "Scan "+str(scan)+" fit", "L")
 						#Residual Plot
@@ -105,15 +109,19 @@ for vdmset in vdmsets:
 						graph_res.SetLineColor(color)
 						graph_res.SetLineStyle(2)
 						graphs_res.append(graph_res)
-						topvalues.append(graph_res.GetYaxis().GetXmax())
-						bottomvalues.append(graph_res.GetYaxis().GetXmin())
+						res_topvalues.append(graph_res.GetYaxis().GetXmax())
+						res_bottomvalues.append(graph_res.GetYaxis().GetXmin())
 					top = max(topvalues)
 					bottom = min(bottomvalues)
+					res_top = max(res_topvalues)
+					res_bottom = min(res_bottomvalues)
 					#Drawing fitting plots and residual plots
 					FIGURE2_RATIO = 0.35
 					SUBFIGURE_MARGIN = 0.15
 					canvas = TCanvas( "canvas", "canvas", 1000, 1000 )
 					canvas.cd()
+					graphs[0].SetMaximum(top)
+					graphs[0].SetMinimum(bottom)
 					graphs[0].Draw("AP")
 					for i in range(len(graphs)):
 						graphs[i].Draw("P")
@@ -128,8 +136,8 @@ for vdmset in vdmsets:
 					line = TLine(graph.GetXaxis().GetXmin(),0.,graph.GetXaxis().GetXmax(),0.)
 					line.SetLineColor(kRed)
 					line.SetLineStyle(2)
-					graphs_res[0].SetMaximum(top)
-					graphs_res[0].SetMinimum(bottom)
+					graphs_res[0].SetMaximum(res_top)
+					graphs_res[0].SetMinimum(res_bottom)
 					graphs_res[0].Draw("AP")
 					for i in range(len(graphs_res)):
 						graphs_res[i].Draw("P")

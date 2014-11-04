@@ -169,22 +169,26 @@ int main(int argc, char **argv) {
     input_type = "data";
     data_run = "201351";
     //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_04Aug2014.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_04Aug2014.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-201351/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_207216") {
     input_type = "data";
     data_run = "207216";
     //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207216/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_207219") {
     input_type = "data";
     data_run = "207219";
     //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-207219/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_214984") {
     input_type = "data";
     data_run = "214984";
     //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_21042014_NormalD3PD.root";
-    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    //input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results_NormalD3PD_05Aug2014.root";
+    input_path = GlobalSettings::path_inputRawCount; input_path += "/VdMScan-214984/17.2-VtxLumi/"; input_path += GlobalSettings::path_inputRawCount_v; input_path += "/InDetTrackD3PD_results.root";
   } else if (tag == "data_8TeV_17.2_VtxLumi_215021") {
     input_type = "data";
     data_run = "215021";
@@ -305,9 +309,22 @@ int main(int argc, char **argv) {
     } else if (data_run == "200805") {
       good_pLBs.push_back(std::make_pair<Int_t,Int_t>(179, 211));
     } else if (data_run == "201351") {
-      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(18, 133)); //Scan1
-      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(140, 251)); //Scan2
-      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(354, 464)); //Scan3
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(18, 133)); //Scan1
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(140, 251)); //Scan2
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(354, 464)); //Scan3
+      // In x an y
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(20, 68)); //Scan1 x
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(83, 131)); //Scan1 y
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(142, 190)); //Scan2 x
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(201, 249)); //Scan2 y
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(356, 404)); //Scan3 x
+      //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(414, 462)); //Scan3 y
+
+      //Test plb with z-dist center close to 0
+      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(30, 58)); //Scan1 x
+      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(152, 180)); //Scan2 x
+      good_pLBs.push_back(std::make_pair<Int_t,Int_t>(366, 394)); //Scan3 x
+
       //Low <mu> (from run query)
       //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(18, 64)); 
       //good_pLBs.push_back(std::make_pair<Int_t,Int_t>(78, 133));
@@ -368,9 +385,9 @@ int main(int argc, char **argv) {
 
       for (vector<Int_t>::iterator current_pLB = pLB_list.begin(); current_pLB != pLB_list.end(); ++current_pLB) {     
         Int_t current_point = distance(pLB_list.begin(), current_pLB);
-        //if ((current_point % 20) == 0) {
+        if ((current_point % 20) == 0) {
           cout << "On point " << current_point << " / " << n_pLBs << endl;
-        //}
+        }
       
         TString tag = "BCID"; tag += *bcid; tag += "_pLB"; tag += *current_pLB;
         
@@ -389,11 +406,11 @@ int main(int argc, char **argv) {
         TF1 *f_gaus = new TF1("f_gaus", "gaus(0)", -200., 200.);
         f_gaus->SetParameter(0, h_z_tmp->Integral());
         f_gaus->SetParameter(1, 0.);
-        f_gaus->SetParameter(2, 50.);
+        f_gaus->SetParameter(2, 45.);
         h_z_tmp->Fit(f_gaus, "QRE+");
         
         sigma_z[*bcid][*current_pLB] = f_gaus->GetParameter(2);
-        cout << "sigma_z["<<*bcid<<"]["<<*current_pLB<<"] = " << sigma_z[*bcid][*current_pLB] << endl;
+        cout << "BCID: " << *bcid << ", pLB: " << *current_pLB << ", RMS: " << h_z_tmp->GetRMS() << ", sigma_z: " << sigma_z[*bcid][*current_pLB] << ", center: " << f_gaus->GetParameter(1) << ", chi2/ndf: " << f_gaus->GetChisquare()/f_gaus->GetNDF() << endl;
         
         tg_sigma_z[*bcid]->SetPoint(current_point, *current_pLB, f_gaus->GetParameter(2));
         tg_sigma_z[*bcid]->SetPointError(current_point, 0, f_gaus->GetParError(2));
@@ -423,18 +440,29 @@ int main(int argc, char **argv) {
       TString name;
       name = "hist/PriVtxZpLB_BCID"; name += *bcid;
       TH2D *h_z_plb_tmp = (TH2D*)f_in->Get(name);
+      TH1D *h_z_plb_tmp_proj = new TH1D();
 
       name = "h_z_BCID"; name += *bcid;
       h_z[*bcid] = new TH1D(name, name, h_z_plb_tmp->GetXaxis()->GetNbins(), h_z_plb_tmp->GetXaxis()->GetXmin(),h_z_plb_tmp->GetXaxis()->GetXmax());
     
       //Add up slices of the TH2D
       cout << "[initializePuCorr] Add up slices of the TH2D to make z distribution histogram" << endl;
-      for (vector<std::pair<Int_t, Int_t> >::iterator pLB_interval = good_pLBs.begin(); pLB_interval != good_pLBs.end(); ++pLB_interval) {
-        Int_t bin1 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).first);
-        Int_t bin2 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).second);
-        h_z[*bcid]->Add(h_z_plb_tmp->ProjectionX("tmp", bin1+10, bin2-10)); // Hack for April
-        cout << "bin1 = " << bin1 << ", bin2 = " << bin2 << "h_zRMS = " << h_z[*bcid]->GetRMS() << endl;
+//      for (vector<std::pair<Int_t, Int_t> >::iterator pLB_interval = good_pLBs.begin(); pLB_interval != good_pLBs.end(); ++pLB_interval) {
+//        Int_t bin1 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).first);
+//        Int_t bin2 = h_z_plb_tmp->GetYaxis()->FindBin((*pLB_interval).second);
+//        h_z[*bcid]->Add(h_z_plb_tmp->ProjectionX("tmp", bin1, bin2)); 
+//      }
+      //Test
+      for( vector<Int_t>::iterator current_pLB = pLB_list.begin(); current_pLB != pLB_list.end(); ++current_pLB ){
+        Int_t ybin_z = h_z_plb_tmp->GetYaxis()->FindBin(*current_pLB);
+        h_z_plb_tmp_proj = h_z_plb_tmp->ProjectionX("tmp", ybin_z, ybin_z); 
+        if (h_z_plb_tmp_proj->Integral() < 500) {
+          continue;
+        }
+        h_z[*bcid]->Add( h_z_plb_tmp_proj ); 
+        cout << "Slice has RMS: " << h_z_plb_tmp_proj->GetRMS() << endl;
       }
+      cout << "All added have RMS: " << h_z[*bcid]->GetRMS() << endl;
       h_z[*bcid]->Sumw2();
 
       TString path_z = "data_z_distribution_BCID"; path_z+=*bcid; path_z+=".root";
@@ -463,6 +491,9 @@ int main(int argc, char **argv) {
     std::map<Int_t, std::map<Int_t, TCanvas*> > c_dz;
     std::map<Int_t, std::map<Int_t, TLegend*> > l_dz;
     std::map<Int_t, std::map<Int_t, TGraphErrors*> > tg_masking_correction;
+    std::map<Int_t, TGraphErrors*> tg_masking_correction_avg;
+    std::map<Int_t, Double_t*> xentries;
+    std::map<Int_t, Double_t*> yentries;
 
     bool first = true;
     
@@ -582,6 +613,30 @@ int main(int argc, char **argv) {
       for (vector<Int_t>::iterator bcid = bcids.begin(); bcid != bcids.end(); ++bcid) {
         tg_masking_correction[*nTrkCut][*bcid]->Write();
       }
+
+      // Make an average tg_masking_correction plot over BCIDs
+      TString nametg = "tg_masking_correction_NTrk"; nametg += *nTrkCut;
+      tg_masking_correction_avg[*nTrkCut] = new TGraphErrors(tg_masking_correction[*nTrkCut][1]->GetN());
+      tg_masking_correction_avg[*nTrkCut]->SetName(nametg);
+      tg_masking_correction_avg[*nTrkCut]->SetTitle(nametg);
+      for( vector<Int_t>::iterator bcid = bcids.begin(); bcid != bcids.end(); ++bcid ){
+        xentries[*bcid] = tg_masking_correction[*nTrkCut][*bcid]->GetX();
+        yentries[*bcid] = tg_masking_correction[*nTrkCut][*bcid]->GetY();
+      }
+      for( Int_t i = 0; i < tg_masking_correction[*nTrkCut][1]->GetN(); i++ ){
+        Double_t avg = 0;
+        Double_t sumerr2 = 0;
+        Int_t nbcids = bcids.size(); 
+        for( vector<Int_t>::iterator bcid = bcids.begin(); bcid != bcids.end(); ++bcid ){
+          avg+=yentries[*bcid][i];
+          Double_t err = tg_masking_correction[*nTrkCut][*bcid]->GetErrorY(i);
+          sumerr2+=err*err;
+        }
+        tg_masking_correction_avg[*nTrkCut]->SetPoint(i,xentries[1][i],avg/nbcids);
+        tg_masking_correction_avg[*nTrkCut]->SetPointError(i,0,sqrt(sumerr2));
+      }
+      tg_masking_correction_avg[*nTrkCut]->Write();
+
       //Draw all three p_mask_dz functions + average
       name = "c_pmask_dz_NTrk"; name += *nTrkCut;
       
@@ -614,7 +669,7 @@ int main(int argc, char **argv) {
       l_pmask_dz[*nTrkCut]->Draw();
       
       c_pmask_dz[*nTrkCut]->Write();
-      c_pmask_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_pmask_dz[*nTrkCut]->GetName() + TString(".png"));
+      c_pmask_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_pmask_dz[*nTrkCut]->GetName() + TString(".pdf"));
       c_pmask_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_pmask_dz[*nTrkCut]->GetName() + TString(".eps"));
       
       // - Draw expected dz fit
@@ -640,7 +695,7 @@ int main(int argc, char **argv) {
           l_dz[*nTrkCut][*bcid]->AddEntry(fit, "Fit to sides", "l");
         }
         l_dz[*nTrkCut][*bcid]->Draw();
-        c_dz[*nTrkCut][*bcid]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_dz[*nTrkCut][*bcid]->GetName() + TString(".png"));
+        c_dz[*nTrkCut][*bcid]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_dz[*nTrkCut][*bcid]->GetName() + TString(".pdf"));
         c_dz[*nTrkCut][*bcid]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_dz[*nTrkCut][*bcid]->GetName() + TString(".eps"));
       }
 
@@ -889,7 +944,7 @@ int main(int argc, char **argv) {
 
       h_pmask_dz[*nTrkCut]->Draw("hist");
       
-      c_pmask_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_pmask_dz[*nTrkCut]->GetName() + TString(".png"));
+      c_pmask_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_pmask_dz[*nTrkCut]->GetName() + TString(".pdf"));
       c_pmask_dz[*nTrkCut]->Write();
 
       // - Draw expected dz fit
@@ -912,7 +967,7 @@ int main(int argc, char **argv) {
         l_dz[*nTrkCut]->AddEntry(fit, "Fit to sides", "l");
       }
       l_dz[*nTrkCut]->Draw();
-      c_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_dz[*nTrkCut]->GetName() + TString(".png"));
+      c_dz[*nTrkCut]->SaveAs(GlobalSettings::path_maskingCorrection + TString("/") + output_prefix + TString("/") + c_dz[*nTrkCut]->GetName() + TString(".pdf"));
       
       f_out->Close();
     }

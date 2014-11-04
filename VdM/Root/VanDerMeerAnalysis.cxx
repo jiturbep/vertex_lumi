@@ -1084,10 +1084,10 @@ void VanDerMeerAnalysis::CorrectPileupEffects(TH2D *h_z_plb, TString p_energy, T
       TString hname = "h_z_plb";
       hname += *it;
       TH1D *h_z = (TH1D*)h_z_plb->ProjectionX(hname, bin, bin);
-      cout << "[VanDerMeerAnalysis] INFO : Writting h_z_plb histogram into root file" << endl;
-      TFile *f_z_plb = new TFile(hname+".root", "new");
-      h_z->Write();
-      f_z_plb->Close();
+      //cout << "[VanDerMeerAnalysis] INFO : Writting h_z_plb histogram into root file" << endl;
+      //TFile *f_z_plb = new TFile(hname+".root", "new");
+      //h_z->Write();
+      //f_z_plb->Close();
 
       cout << "[VanDerMeerAnalysis] INFO : h_z RMS = " << h_z->GetRMS() << endl;
 
