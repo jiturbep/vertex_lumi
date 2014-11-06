@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
   //nTrkColors[10] = kBlue+3;
   
 
-  Int_t mu_points = 1000;
+  Int_t mu_points = 3200;
   //Float_t mu_max = 22.; //maximun value of ei_actualIntPerXing variable in the low mu sample
   Float_t mu_max = 80.; // maximum value of mu reconstructible, the one used as a mean of the poisson distribution when doing the smearing JI
 

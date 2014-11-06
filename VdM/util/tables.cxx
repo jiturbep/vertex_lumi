@@ -433,13 +433,13 @@ int main(int argc, char **argv) {
 	for (vector<Int_t>::iterator scan = scans.begin(); scan != scans.end(); ++scan) {
     for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
     	stringstream ss;
-			ss << "/afs/cern.ch/user/j/jiturbep/InfoFromVdMScans/vtx_counting/results_sigma_vis_value_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
+			ss << "/afs/cern.ch/user/j/jiturbep/vertex_lumi/InfoFromVdMScans/vtx_counting/results_sigma_vis_value_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
 			string filename = ss.str();
 			myfile.open(filename.c_str());
   		myfile.precision(11);
     	myfile << sigma_vis_scan_avg[*nTrkCut][*scan] << " " << sigma_vis_scan_err[*nTrkCut][*scan];
     	myfile.close();
-    	cout << "Created text file: "<< filename << endl;
+    	//cout << "Created text file: "<< filename << endl;
   	}
 	}
 	
@@ -448,13 +448,13 @@ int main(int argc, char **argv) {
 	for (vector<Int_t>::iterator scan = scans.begin(); scan != scans.end(); ++scan) {
     for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
     	stringstream ss;
-			ss << "/afs/cern.ch/user/j/jiturbep/InfoFromVdMScans/vtx_counting/results_lumi_sp_value_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
+			ss << "/afs/cern.ch/user/j/jiturbep/vertex_lumi/InfoFromVdMScans/vtx_counting/results_lumi_sp_value_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
 			string filename = ss.str();
 			myfile2.open(filename.c_str());
   		myfile2.precision(11);
     	myfile2 << lumi_sp_scan_avg[*nTrkCut][*scan] << " " << lumi_sp_scan_err[*nTrkCut][*scan];
     	myfile2.close();
-    	cout << "Created text file: "<< filename << endl;
+    	//cout << "Created text file: "<< filename << endl;
   	}
 	}
 	
@@ -463,7 +463,7 @@ int main(int argc, char **argv) {
 	for (std::vector<Int_t>::iterator scan = scans.begin(); scan != scans.end(); ++scan) {
 		for (vector<Int_t>::iterator nTrkCut = nTrkCuts.begin(); nTrkCut != nTrkCuts.end(); ++nTrkCut) {
 		  stringstream ss;
-			ss << "/afs/cern.ch/user/j/jiturbep/InfoFromVdMScans/vtx_counting/results_parameters_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
+			ss << "/afs/cern.ch/user/j/jiturbep/vertex_lumi/InfoFromVdMScans/vtx_counting/results_parameters_scan" << *scan << "_NTrkCut" << *nTrkCut <<".txt";
 			string filename = ss.str();
 			myfile3.open(filename.c_str());
   		myfile3.precision(11);
@@ -494,10 +494,8 @@ int main(int argc, char **argv) {
         tag += *scan;
         tag += "_";
         tag += default_fit;
-        cout << " nTrkCut " << *nTrkCut << endl;
-        cout.precision(11);
-        cout << " sigma_vis = " << m_sigma_vis[tag] << endl;
-        cout << " error = " << m_sigma_vis_err[tag];
+        cout << " nTrkCut " << *nTrkCut << ", sigma_vis = " << m_sigma_vis[tag] << ", error = " << m_sigma_vis_err[tag] << endl;
+        cout.precision(11); 
       }
     }
   }

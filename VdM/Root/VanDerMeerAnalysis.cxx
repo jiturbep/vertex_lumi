@@ -1621,8 +1621,8 @@ void VanDerMeerAnalysis::FitVdmCurves() {
   cout << "max_y = " << max_y << ", MaxElement = " << TMath::MaxElement(tg_musp_y->GetN(),tg_musp_y->GetY()) << endl;
  
   ////////////////Hack for April vdM scans, excluding outermost points from the fit
-  low_displacement = -127.0;
-  high_displacement = 125.0;
+  //low_displacement = -127.0;
+  //high_displacement = 125.0;
 
   cout << "low_displacement = " << low_displacement << ", high_displacement = " << high_displacement << endl;
 
@@ -3029,15 +3029,17 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
     tg_mu_fake["x"]->SetPoint(i, nominal_separation[current_pLB], mu_fake_list[current_pLB]);
     tg_mu_fake["x"]->SetPointError(i, 0., mu_fake_uncertainty_list[current_pLB]);
 
-    tg_mask_corr["x"]->SetPoint(i, mu_raw_pLB[current_pLB], masking_correction_factors[current_pLB]);
-
     tg_masking_correction_factors["x"]->SetPoint(i, nominal_separation[current_pLB], masking_correction_factors[current_pLB]);
-    cout << "mu_raw = " << mu_raw_pLB[current_pLB] << ", fake correction (%) = " << (mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100 << endl;
+
+    tg_mask_corr["x"]->SetPoint(i, mu_raw_pLB[current_pLB], masking_correction_factors[current_pLB]);
+    
     tg_mu_corr_fake["x"]->SetPoint(i,mu_raw_pLB[current_pLB],(mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100);
-    cout << "mu_real = " << mu_real_pLB[current_pLB] << ", masking correction (%) = " << (1-masking_correction_factors[current_pLB])*100 << endl;
     tg_mu_corr_mask["x"]->SetPoint(i,mu_real_pLB[current_pLB],(1-masking_correction_factors[current_pLB])*100);
+    tg_mu_corr_total["x"]->SetPoint(i, mu_raw_pLB[current_pLB], mu_pLB[current_pLB]);
+
+    cout << "mu_raw = " << mu_raw_pLB[current_pLB] << ", fake correction (%) = " << (mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100 << endl;
+    cout << "mu_real = " << mu_real_pLB[current_pLB] << ", masking correction (%) = " << (1-masking_correction_factors[current_pLB])*100 << endl;
     cout << "Total correction for this mu_raw is (%) = " << ((mu_raw_pLB[current_pLB]-mu_pLB[current_pLB])/mu_raw_pLB[current_pLB])*100 << endl;
-    tg_mu_corr_total["x"]->SetPoint(i, mu_raw_pLB[current_pLB], ((mu_raw_pLB[current_pLB]-mu_pLB[current_pLB])/mu_raw_pLB[current_pLB])*100);
   }
 
   tg_n_vtx["x"]->Write();
@@ -3071,6 +3073,26 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
   tg_masking_correction_factors["y"] = new TGraphErrors(plb_list_y.size());
   tg_masking_correction_factors["y"]->SetName(name);
 
+  name = "tg_mu_corr_total_y";
+  name += p_tag;
+  tg_mu_corr_total["y"] = new TGraphErrors(plb_list_y.size());
+  tg_mu_corr_total["y"]->SetName(name);
+
+  name = "tg_mu_corr_fake_y";
+  name += p_tag;
+  tg_mu_corr_fake["y"] = new TGraphErrors(plb_list_y.size());
+  tg_mu_corr_fake["y"]->SetName(name);
+
+  name = "tg_mu_corr_mask_y";
+  name += p_tag;
+  tg_mu_corr_mask["y"] = new TGraphErrors(plb_list_y.size());
+  tg_mu_corr_mask["y"]->SetName(name);
+
+  name = "tg_mask_corr_y";
+  name += p_tag;
+  tg_mask_corr["y"] = new TGraphErrors(plb_list_y.size());
+  tg_mask_corr["y"]->SetName(name);
+
   for (unsigned int i=0; i<plb_list_y.size(); i++) {
     Int_t current_pLB = plb_list_y[i];
 
@@ -3085,6 +3107,16 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
 
     tg_masking_correction_factors["y"]->SetPoint(i, nominal_separation[current_pLB], masking_correction_factors[current_pLB]);
 
+    tg_mask_corr["y"]->SetPoint(i, mu_raw_pLB[current_pLB], masking_correction_factors[current_pLB]);
+
+    tg_mu_corr_fake["y"]->SetPoint(i,mu_raw_pLB[current_pLB],(mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100);
+    tg_mu_corr_mask["y"]->SetPoint(i,mu_real_pLB[current_pLB],(1-masking_correction_factors[current_pLB])*100);
+    tg_mu_corr_total["y"]->SetPoint(i, mu_raw_pLB[current_pLB], mu_pLB[current_pLB]);
+
+    cout << "mu_raw = " << mu_raw_pLB[current_pLB] << ", fake correction (%) = " << (mu_fake_list[current_pLB]/mu_raw_pLB[current_pLB])*100 << endl;
+    cout << "mu_real = " << mu_real_pLB[current_pLB] << ", masking correction (%) = " << (1-masking_correction_factors[current_pLB])*100 << endl;
+    cout << "Total correction for this mu_raw is (%) = " << ((mu_raw_pLB[current_pLB]-mu_pLB[current_pLB])/mu_raw_pLB[current_pLB])*100 << endl;
+
   }
 
   tg_n_vtx["y"]->Write();
@@ -3092,6 +3124,10 @@ void VanDerMeerAnalysis::DebugPlots(TString p_path, TString p_tag) {
   tg_musp_y->Write();
   tg_mu_fake["y"]->Write();
   tg_masking_correction_factors["y"]->Write();
+  tg_mu_corr_fake["y"]->Write();
+  tg_mu_corr_mask["y"]->Write();
+  tg_mu_corr_total["y"]->Write();
+  tg_mask_corr["y"]->Write();
 
   //fc->GetFakeCorrectionTGraph()->Write(TString("tg_fake_correction_") + p_tag);
   //pmc->GetDifferentialPmask()->Write(TString("h_pmask_dz_") + p_tag);

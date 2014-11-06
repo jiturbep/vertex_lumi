@@ -5,6 +5,8 @@ import math
 
 ROOT.TH1.AddDirectory(False)
 ROOT.gROOT.SetBatch()
+ROOT.gStyle.SetPadTickX(1)
+ROOT.gStyle.SetPadTickY(1)
 
 path = "/afs/cern.ch/work/j/jiturbep/private/atlas-lumi/Data/MaskingCorrection/"
 rootfile = "pmask_cache.root"
@@ -38,7 +40,7 @@ for sample in samples:
 			tg_mu = tgfile.Get("tg_mu_obs_vs_mu_actual_NTrk"+ntrk)
 		else:
 			bcid = "2361"
-			tg_pu = tgfile.Get("tg_pileup_correction_BCID"+bcid+"_NTrkCut"+ntrk)
+			tg_pu = tgfile.Get("tg_masking_correction_NTrk"+ntrk)
 			tg_mu = tgfile.Get("tg_mu_obs_vs_mu_actual_BCID"+bcid+"_NTrkCut"+ntrk)
 		tg_pu.SetMarkerColor(color)
 		tg_mu.SetMarkerColor(color)
